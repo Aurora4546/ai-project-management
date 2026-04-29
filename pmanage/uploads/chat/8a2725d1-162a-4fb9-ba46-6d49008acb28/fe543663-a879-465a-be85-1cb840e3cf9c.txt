@@ -1,0 +1,19 @@
+- Issue card'larında label'ların ve epiclerin logo boyutları arttırılsın. label'lardaki nokta simgesi kaldırılsın
+
+- Etiketleri oluşturduğumuz kısımlarda da daha kullanıcı dostu yapılsın.
+
+- Comment @ ve # ile comment kısmıdna referans verme özelliklerinde avatar ve issue logo hataları.
+
+- Comment ve history kısımları slider şeklinde olması lazım.
+
+- Project description kısmı aynı create ve update issue modal pencereleri gibi rich text editor lazım.
+
+- Now there are some minor issues that i want you to fix. 
+
+First the modal window for creatıng and updatıng modal wındow the parent ıssue dropdown list and lable dropdown list should open upwoard because when user clicks this dropdown button the list is so long that user cant see anything. Please fix this 
+
+after i create a label when i come back to the issue the labels are all the same blue color on the modal window. Please fix this .
+
+The commenting is not working and mentioning popupwindow is not accurate. First there should be no unassigned selection while mentioning and the avatars are not accurate. Pleaes fix these step by step aask me any questions if you need to .
+
+- Dil desteği kesin olarak gelmesi lazım.

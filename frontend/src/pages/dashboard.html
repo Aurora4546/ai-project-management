@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgileFlow Pro - Projects Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#eaeff1",
+              "surface-container-high": "#e3e9ec",
+              "on-tertiary-fixed": "#2e3d4e",
+              "tertiary-container": "#cfdef5",
+              "inverse-on-surface": "#9b9d9e",
+              "inverse-surface": "#0c0f10",
+              "tertiary-dim": "#465467",
+              "secondary-dim": "#44546a",
+              "on-secondary-container": "#435368",
+              "surface-container-lowest": "#ffffff",
+              "surface": "#f8f9fa",
+              "on-surface": "#2b3437",
+              "surface-bright": "#f8f9fa",
+              "outline-variant": "#abb3b7",
+              "tertiary-fixed": "#cfdef5",
+              "on-primary-fixed": "#354053",
+              "on-error-container": "#752121",
+              "surface-container-highest": "#dbe4e7",
+              "on-secondary-fixed-variant": "#4d5d73",
+              "inverse-primary": "#dae6fe",
+              "background": "#f8f9fa",
+              "tertiary": "#526073",
+              "surface-dim": "#d1dce0",
+              "on-secondary-fixed": "#314055",
+              "on-tertiary": "#f7f9ff",
+              "primary-fixed-dim": "#cad5ed",
+              "secondary-fixed-dim": "#c5d6f0",
+              "surface-container-low": "#f1f4f6",
+              "error-container": "#fe8983",
+              "on-surface-variant": "#586064",
+              "error-dim": "#4e0309",
+              "secondary": "#506076",
+              "on-error": "#fff7f6",
+              "primary-dim": "#485367",
+              "primary": "#545f73",
+              "surface-variant": "#dbe4e7",
+              "error": "#9f403d",
+              "on-background": "#2b3437",
+              "on-tertiary-fixed-variant": "#4a596c",
+              "on-primary": "#f6f7ff",
+              "tertiary-fixed-dim": "#c1d0e6",
+              "surface-tint": "#545f73",
+              "secondary-fixed": "#d3e4fe",
+              "secondary-container": "#d3e4fe",
+              "outline": "#737c7f",
+              "primary-container": "#d8e3fb",
+              "on-tertiary-container": "#414f62",
+              "on-secondary": "#f7f9ff",
+              "on-primary-fixed-variant": "#515c70",
+              "on-primary-container": "#475266",
+              "primary-fixed": "#d8e3fb"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-surface antialiased font-body">
+<!-- TopNavBar (Synchronized with SCREEN_7) -->
+<header class="flex-none flex items-center justify-between border-b border-surface-variant bg-surface-container-lowest px-6 py-3 z-50">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3 text-on-surface">
+<div class="size-6 text-primary">
+<svg fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 12L12 22ZM12 12L2 12ZM12 12L12 2ZM12 12L22 12Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-on-surface text-lg font-bold tracking-tight">Project Name</h2>
+</div>
+<label class="flex flex-col min-w-40 !h-8 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded h-full border border-outline-variant bg-surface-container-lowest focus-within:border-primary">
+<div class="text-on-surface-variant flex items-center justify-center pl-3" data-icon="magnifying_glass">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 bg-transparent text-on-surface focus:outline-0 focus:ring-0 border-none h-full placeholder:text-on-surface-variant px-3 text-sm" placeholder="Search" value=""/>
+</div>
+</label>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center rounded h-8 w-8 hover:bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-[20px]" data-icon="bell">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded h-8 w-8 hover:bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-[20px]" data-icon="gear">settings</span>
+</button>
+<div class="bg-surface-variant bg-center bg-no-repeat bg-cover rounded-full size-8" data-alt="User Avatar Placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCKAneCawsdRZTj8nbx_00US1c_lIJ7TndZL7xYPzZbLaFQpDFTisabRULGeW_0gEyq2r70TzXiEaw9yN4AeUGtLsLQn2EQqUU8fTry1h49kDcVXqm5uAzJIAkDXNtXzJKUXuj1bABovLbmO7q4UaccIeKVnJGmG1-VD2wW9bg6FkPgBeVFn3p2tXNAxAUzauecgVsTsw7T7s6a7mjq-B6E8yaSCsHqEKxEb5jTAPwdsGKIxklyLcNm5H8x0pDQcoA5b1rNMQJqZI9i");'></div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar (Synchronized with SCREEN_7) -->
+<aside class="w-64 flex-none bg-surface-container flex flex-col pt-6 z-0 border-r border-surface-variant hidden lg:flex">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="bg-surface-variant bg-center bg-no-repeat bg-cover rounded-full size-10" data-alt="Project Alpha Logo Placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDulUI2lWD1JGoKAs3kYMhGo4zyHycxv8oSV7fY1u1bHnJS96UfmirCxb1FBlgFmpEmSJCAiFx9Yb4t4ukOicpyMLR3DqqjJuks2HkmsOMBBw7ezciXv1sVq5tqqgBAPWqnD22R32VYYdg3dm6kp98532WI5GUMiEl8PYw-Tha5fU60Ms0b3lMNTBvxTdDnlLx4iTPifEWjrxvw_XY4cTY6pA-POovjDgzKrwHeBS9wbVjwJBJHC6-E_U16zzBU4v2w-XqQbC8x4BZZ");'></div>
+<div>
+<h1 class="text-on-surface text-base font-bold leading-tight">Project Alpha</h1>
+<p class="text-on-surface-variant text-sm">Active Project</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1 px-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded bg-surface-container-lowest relative text-on-surface font-medium border border-outline-variant/20 shadow-sm" href="#">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r"></div>
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="kanban">view_kanban</span>
+<span class="text-sm">Agile Board</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="list">format_list_bulleted</span>
+<span class="text-sm">Backlog</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat_circle">chat</span>
+<span class="text-sm">Team Chat</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chart_line_up">trending_up</span>
+<span class="text-sm">AI Reports</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto min-h-screen bg-surface p-6 md:p-12 lg:p-20">
+<!-- Editorial Header -->
+<div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<nav class="flex items-center gap-2 text-on-surface-variant text-xs mb-4">
+<span>Workspaces</span>
+<span class="material-symbols-outlined text-[10px]">chevron_right</span>
+<span class="font-semibold text-primary">Overview</span>
+</nav>
+<h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter text-slate-900 leading-none">My Projects</h1>
+<p class="mt-4 text-on-surface-variant max-w-md text-sm">Manage your active sprint cycles and team collaborations from a single point of truth.</p>
+</div>
+<button class="bg-primary text-on-primary px-8 py-3 rounded font-semibold flex items-center gap-2 hover:opacity-90 transition-colors active:scale-95 duration-150 self-start">
+<span class="material-symbols-outlined">add_circle</span>
+<span>Create Project</span>
+</button>
+</div>
+<!-- Project Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+<!-- Project Card 1 -->
+<div class="bg-surface-container-lowest border border-slate-200 p-6 rounded transition-all hover:bg-surface-bright cursor-pointer group flex flex-col">
+<h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">Mobile App Redesign</h3>
+<p class="text-sm text-on-surface-variant mb-6 line-clamp-2">Revamping the core navigation and checkout experience for the Q4 launch phase.</p>
+<div class="flex items-center justify-between border-t border-slate-100 pt-6 mt-auto">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Female team member portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuFH8DIWnMAOwiFf0Qn_rBe6zynmejJONbL83NpuT7SApmEDPB28f7gYvJTdlr5u4HvT6XRuA90SHs-FemuvFaXaV_fS8Z9g4JBOAp4gqlZ4QziTh1yq9-wlrDWrbYU_0784xUjNZcXc0WXU4WIDoGEBdRod5S9yA2BsLKXyPf_sFNrRj12h_pg1z_SHPJ8obLEe848eEYsElaU0TFt5_5h41RpRMjhda16Pv3IPQlrfq2e30s7k3mqye-6ZNxZM7-BmxIp4nYsYjg"/>
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Male team member portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvv9oMIS6tChbBSdpu6Yew_X-VpxSpa4a-bMp1eZvlaKECyzEMWQ_L9V4e1fKUnhteWX8BAnh8j0p_L26G0hacZaWVvQDYLzkV1X-ogNJwRds2tkHobIkTGzAUSUvUUz9FypD3CPzpj6Lq0bQO-rD1-QEYKYtHcHDu2DvB-A3pEWwzUMajke9TMEdu0guntOyno4gB1t5-aqxZ2bKG_BZnGMRRSRu5dDNvOvBKfhCbqH9xoaQrSV1G7Xpb3BgKe6yvKljba7U-9jxf"/>
+<div class="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-500">+3</div>
+</div>
+<span class="text-[10px] text-slate-400 font-medium">Updated 2h ago</span>
+</div>
+</div>
+<!-- Project Card 2 -->
+<div class="bg-surface-container-lowest border border-slate-200 p-6 rounded transition-all hover:bg-surface-bright cursor-pointer group flex flex-col">
+<h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">API Infrastructure</h3>
+<p class="text-sm text-on-surface-variant mb-6 line-clamp-2">Scaling internal microservices to handle increased traffic from global regions.</p>
+<div class="flex items-center justify-between border-t border-slate-100 pt-6 mt-auto">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Technical lead portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCETyK1dXZ4jdwUb6lKVvx8KGn_8bPVgdxRGtJuQQ9cn6DGDz-fgvYlL86r9BbH8ICQZuLoY052F_uXpRQtNGdtZEzw6fJG-UVbtTeoP-BH-ExUJDggmBU7SlPfCj9XnJ4sR6WlfdtQ-A6xpo8evQ4sPjmU51Ved8a-GCe52EukGYyXp3azecJzXzizP9l-j1jcFQvLziVVtltm-Vw2qBcsW5lIAKaScZ3YmZjQkeEUJKdj9sZlfSB1NGy64DKVxHBOiZp1Tk07HtSI"/>
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white" data-alt="System Architect" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfh1ebEGbtCL6eox_sFJtQpZI1CIWyf4oQIBTWVKE1A9EFjPqtriYWrL_u9ht1Q0Si_UG4-CXa37hr_eZBiaq3op3YD_UJ3AorGG8854G1GMdoi8d53aXQZ0uVIxXsWHRmdSS87g31Huc2iAkZIGty_nFNHTZbpvFF8xreNkvvhbR_6xq-MLeZqpJLWhPgInk1ZNac_zXS_4cQ2u3kAFdSwTGgESGQt5YKLsIZCNh7PU6ZgsgGfroeJEgN0xUiXGZv3LxTswD8WEGE"/>
+</div>
+<span class="text-[10px] text-slate-400 font-medium">Updated 5h ago</span>
+</div>
+</div>
+<!-- Project Card 3 -->
+<div class="bg-surface-container-lowest border border-slate-200 p-6 rounded transition-all hover:bg-surface-bright cursor-pointer group flex flex-col">
+<h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">Brand Identity V2</h3>
+<p class="text-sm text-on-surface-variant mb-6 line-clamp-2">Defining the visual language for the new year including motion and tone.</p>
+<div class="flex items-center justify-between border-t border-slate-100 pt-6 mt-auto">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Creative director portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeMXO5XF_b-aSDO4r9wg7rXeifSMxgt1gm7wXlQ-Cl3RSVQXRup319PvIyx1DtEVrCdBeIPhcog2XHGZQgRqoHHG275g_Yhx7fdDRZ8_1q3y6y-SqJUxJ2AiLdEocqMkCb0u4p9MYuVs3we5c01xTZG_lIXzhm6Wv4dv8TzNiZT1XDms1DseuSfdia8n8_5yaLc-qTIWr4kDLyb4_9deoAbjHqZQjKPpobbykLgjNPCIDQTQjFkbQr4o31jcjs9NDlNKtMpIllCs7z"/>
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Designer portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOyGzHEZr8OB3yfmAaUnforqfY-Cii6UDfzFFXCamTu-yhzAg9BFYPrQIRTJSjf-G-uOUcYUQquvahQvWOzIv9_XNcqnEsm85mEu0Wfy7aI3fQAdrBvjjELqy8qkKH-5gaUtNJlMJx9LV24dMo_zbOZJ77r_iMilJ86D2jFALk1zAOAwQ85KXT2ZCCKHbhzbQRRfo61V-wJNJ20tl6f--jJpyafEe3d602s0AskX58fCEoIU_1NG4Z0BZOMrxICXTYQtm42E65p3E3"/>
+</div>
+<span class="text-[10px] text-slate-400 font-medium">Updated 1d ago</span>
+</div>
+</div>
+<!-- Project Card 4 -->
+<div class="bg-surface-container-lowest border border-slate-200 p-6 rounded transition-all hover:bg-surface-bright cursor-pointer group flex flex-col">
+<h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">Marketing Funnel AI</h3>
+<p class="text-sm text-on-surface-variant mb-6 line-clamp-2">Implementing machine learning models to optimize ad spend across platforms.</p>
+<div class="flex items-center justify-between border-t border-slate-100 pt-6 mt-auto">
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-8 h-8 rounded-full border-2 border-white" data-alt="Data scientist portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfh1ebEGbtCL6eox_sFJtQpZI1CIWyf4oQIBTWVKE1A9EFjPqtriYWrL_u9ht1Q0Si_UG4-CXa37hr_eZBiaq3op3YD_UJ3AorGG8854G1GMdoi8d53aXQZ0uVIxXsWHRmdSS87g31Huc2iAkZIGty_nFNHTZbpvFF8xreNkvvhbR_6xq-MLeZqpJLWhPgInk1ZNac_zXS_4cQ2u3kAFdSwTGgESGQt5YKLsIZCNh7PU6ZgsgGfroeJEgN0xUiXGZv3LxTswD8WEGE"/>
+</div>
+<span class="text-[10px] text-slate-400 font-medium">Updated 3h ago</span>
+</div>
+</div>
+<!-- New Project Placeholder Card -->
+<div class="bg-surface-container-low border border-dashed border-outline-variant flex flex-col items-center justify-center p-8 rounded min-h-[220px] group cursor-pointer hover:border-primary transition-colors">
+<div class="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl">add</span>
+</div>
+<span class="font-bold text-on-surface">New Project</span>
+<span class="text-xs text-on-surface-variant mt-1 text-center">Start a fresh workspace for your team</span>
+</div>
+</div>
+</main>
+</div>
+<!-- Mobile Bottom NavBar (Synchronized with original styles but adapted to new branding) -->
+<nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-surface-variant flex justify-around items-center h-16 px-4 z-50">
+<a class="flex flex-col items-center text-primary" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Dashboard</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">view_kanban</span>
+<span class="text-[10px] font-bold">Board</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">format_list_bulleted</span>
+<span class="text-[10px] font-bold">Tasks</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="text-[10px] font-bold">Chat</span>
+</a>
+<a class="flex flex-col items-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">Profile</span>
+</a>
+</nav>
+</body></html>

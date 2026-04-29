@@ -1,0 +1,18 @@
+package com.projectmanagement.pmanage.dto;
+
+import lombok.Data;
+
+@Data
+public class LabelResponse {
+    private Long id;
+    private String name;
+    private String color;
+
+    public LabelResponse() {}
+
+    public LabelResponse(Long id, String name, String color) {
+        this.id = id;
+        this.name = name;
+        this.color = color;
+    }
+}
