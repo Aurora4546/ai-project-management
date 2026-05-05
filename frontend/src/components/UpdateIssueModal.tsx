@@ -7,6 +7,7 @@ import { ParentIssueSelector } from './ParentIssueSelector'
 import { LabelSelector } from './LabelSelector'
 import { Calendar } from './Calendar'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { getAvatarColor, formatRelativeTime, getIssueTheme } from '../utils'
 import { DeleteConfirmModal } from './DeleteConfirmModal'
 
@@ -132,7 +133,7 @@ interface UpdateIssueModalProps {
 }
 
 export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId, onNavigate }: UpdateIssueModalProps): React.ReactElement | null => {
-
+    const { showToast } = useToast();
     const [issueType, setIssueType] = useState('task');
     const [status, setStatus] = useState('todo');
     const [priority, setPriority] = useState('medium');
@@ -387,6 +388,14 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
 
     const handleSave = async () => {
         if (!title.trim() || !initialTask) return;
+        if (title.length > 50) {
+            showToast("Title must be 50 characters or less", "error");
+            return;
+        }
+        if (description.length > 500) {
+            showToast("Description must be 500 characters or less", "error");
+            return;
+        }
         setIsSubmitting(true);
         try {
             const request = {
@@ -404,6 +413,7 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                 labels
             };
             await api.updateIssue(initialTask.id, request);
+            showToast("Issue updated successfully!", "success")
             onClose();
         } catch (error) {
             console.error('Failed to update issue:', error);
@@ -468,23 +478,35 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                         </div>
 
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-400 tracking-wider mb-2.5 uppercase">Title</label>
+                            <div className="flex items-center justify-between mb-2.5">
+                                <label className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase">Title</label>
+                                <span className={`text-[10px] font-bold ${title.length > 50 ? 'text-red-500' : 'text-slate-400'}`}>
+                                    {title.length}/50
+                                </span>
+                            </div>
                             <input 
                                 type="text" 
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
+                                maxLength={50}
                                 placeholder="Summarize the work item" 
                                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[15px] text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 font-bold transition-all shadow-sm"
                             />
                         </div>
 
                         <div className="flex flex-col">
-                            <label className="block text-[11px] font-bold text-slate-400 tracking-wider mb-2.5 uppercase">Description</label>
+                            <div className="flex items-center justify-between mb-2.5">
+                                <label className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase">Description</label>
+                                <span className={`text-[10px] font-bold ${description.length > 500 ? 'text-red-500' : 'text-slate-400'}`}>
+                                    {description.length}/500
+                                </span>
+                            </div>
                             <RichTextEditor
                                 value={description}
                                 onChange={setDescription}
                                 placeholder="Add a detailed description..."
                                 minHeight={250}
+                                maxLength={500}
                             />
                         </div>
 

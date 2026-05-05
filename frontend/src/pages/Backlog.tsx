@@ -197,7 +197,7 @@ export const Backlog = (): React.ReactElement => {
     };
 
     const handleTaskClick = (task: IIssue) => {
-
+        setEditingField(null);
         setSelectedTask(task);
         setIsUpdateModalOpen(true);
     };
@@ -413,7 +413,7 @@ export const Backlog = (): React.ReactElement => {
                 onDragLeave={(e) => { e.preventDefault(); setDropTargetId(null) }}
                 onDrop={(e) => handleDrop(e, issue)}
                 onClick={() => handleTaskClick(issue)}
-                className={`group grid items-center gap-0 px-0 py-0 border-b border-slate-100 last:border-b-0 last:rounded-b-xl hover:bg-slate-100 transition-all cursor-pointer w-full min-w-max relative ${isChild ? 'bg-slate-50' : 'bg-white'} ${editingField?.id === issue.id ? 'z-[100]' : 'z-0 hover:z-10'} ${isDragging ? 'opacity-40 scale-[0.98]' : ''} ${isDropTarget ? 'ring-2 ring-blue-400 ring-inset bg-blue-50/40' : ''}`}
+                className={`group grid items-center gap-0 px-0 py-0 border-b border-slate-100 last:border-b-0 last:rounded-b-xl hover:bg-slate-100 transition-all cursor-pointer w-full min-w-max relative ${isChild ? 'bg-slate-50' : 'bg-white'} ${editingField?.id === issue.id && !isUpdateModalOpen ? 'z-[100]' : 'z-0 hover:z-10'} ${isDragging ? 'opacity-40 scale-[0.98]' : ''} ${isDropTarget ? 'ring-2 ring-blue-400 ring-inset bg-blue-50/40' : ''}`}
                 style={{ gridTemplateColumns: gridTemplate }}
             >
                 {/* Combined Issue Key Column (Col-span-3) */}
@@ -492,6 +492,7 @@ export const Backlog = (): React.ReactElement => {
                                 }
                                 if (e.key === 'Escape') setEditingField(null);
                             }}
+                            maxLength={50}
                             className="absolute inset-0 px-3 bg-white border-2 border-blue-500 z-20 outline-none text-[13px] font-semibold"
                             onClick={(e) => e.stopPropagation()}
                         />

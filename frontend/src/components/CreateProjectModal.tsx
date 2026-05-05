@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { getAvatarColor } from '../utils'
 import { searchUsers, createProject, updateProject } from '../services/api'
 import type { IUserSearchResult, IProject } from '../types'
 import { RichTextEditor } from './RichTextEditor'
 
 interface CreateProjectModalProps {
+  isOpen: boolean
   onClose: () => void
   onCreate: (projectData: IProject) => void
   project?: IProject | null
@@ -17,8 +19,10 @@ interface SelectedUser {
   lastName: string
 }
 
-export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onCreate, project }) => {
+export const CreateProjectModal = ({ isOpen, onClose, onCreate, project }: CreateProjectModalProps): React.ReactElement | null => {
+  if (!isOpen) return null
   const { user } = useAuth()
+  const { showToast } = useToast()
 
   const [projectName, setProjectName] = useState(project?.name || '')
   const [projectKey, setProjectKey] = useState(project?.projectKey || '')
@@ -210,6 +214,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose,
           leads: leadEmails,
           members: memberEmails,
         })
+        showToast('Project updated successfully!', 'success')
         setApiSuccess('Project updated successfully!')
       } else {
         response = await createProject({
@@ -219,6 +224,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose,
           leads: leadEmails,
           members: memberEmails,
         })
+        showToast('Project created successfully!', 'success')
         setApiSuccess('Project created successfully!')
       }
 

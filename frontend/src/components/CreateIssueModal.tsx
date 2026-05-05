@@ -8,6 +8,7 @@ import { ParentIssueSelector } from './ParentIssueSelector'
 import { LabelSelector } from './LabelSelector'
 
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 /* --- Custom Dropdown Component --- */
 interface Option {
@@ -129,6 +130,7 @@ interface CreateIssueModalProps {
 
 export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModalProps): React.ReactElement | null => {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [issueType, setIssueType] = useState('task');
     const [status, setStatus] = useState('todo');
     const [priority, setPriority] = useState('medium');
@@ -198,6 +200,14 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
 
     const handleCreate = async () => {
         if (!title.trim()) return;
+        if (title.length > 50) {
+            showToast("Title must be 50 characters or less", "error");
+            return;
+        }
+        if (description.length > 500) {
+            showToast("Description must be 500 characters or less", "error");
+            return;
+        }
         
         setIsLoading(true);
         try {
@@ -217,6 +227,7 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
             };
             
             await api.createIssue(request);
+            showToast("Issue created successfully!", "success")
             onClose();
             // Reset form
             setTitle('');
@@ -266,23 +277,35 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                     </div>
 
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 tracking-wider mb-2 uppercase">Title</label>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-[10px] font-bold text-slate-500 tracking-wider uppercase">Title</label>
+                            <span className={`text-[10px] font-bold ${title.length > 50 ? 'text-red-500' : 'text-slate-400'}`}>
+                                {title.length}/50
+                            </span>
+                        </div>
                         <input 
                             type="text" 
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
+                            maxLength={50}
                             placeholder="Summarize the work item" 
                             className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 font-medium"
                         />
                     </div>
 
                     <div className="flex flex-col">
-                        <label className="block text-[10px] font-bold text-slate-500 tracking-wider mb-2 uppercase">Description</label>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-[10px] font-bold text-slate-500 tracking-wider uppercase">Description</label>
+                            <span className={`text-[10px] font-bold ${description.length > 500 ? 'text-red-500' : 'text-slate-400'}`}>
+                                {description.length}/500
+                            </span>
+                        </div>
                         <RichTextEditor
                             value={description}
                             onChange={setDescription}
                             placeholder="Describe the work item..."
                             minHeight={160}
+                            maxLength={500}
                         />
                     </div>
 

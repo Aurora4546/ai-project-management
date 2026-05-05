@@ -16,4 +16,11 @@ public interface ProjectReportRepository extends JpaRepository<ProjectReport, UU
     List<ProjectReport> findByProjectIdOrderByCreatedAtDesc(UUID projectId);
 
     long countByProjectId(UUID projectId);
+
+    /**
+     * Bulk-deletes all reports for a project before project deletion.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM ProjectReport r WHERE r.project.id = :projectId")
+    void deleteAllByProjectId(UUID projectId);
 }

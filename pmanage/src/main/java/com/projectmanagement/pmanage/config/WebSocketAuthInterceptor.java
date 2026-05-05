@@ -33,22 +33,28 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                 String authHeader = authorization.get(0);
                 if (authHeader.startsWith("Bearer ")) {
                     String jwt = authHeader.substring(7);
-                    String userEmail = jwtService.extractUsername(jwt);
+                    try {
+                        String userEmail = jwtService.extractUsername(jwt);
 
-                    if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                        UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-                        if (jwtService.isTokenValid(jwt, userDetails)) {
-                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-                            accessor.setUser(authToken);
-                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                        if (userEmail != null) {
+                            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                            if (jwtService.isTokenValid(jwt, userDetails)) {
+                                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
+                                accessor.setUser(authToken);
+                                SecurityContextHolder.getContext().setAuthentication(authToken);
+                                return message;
+                            }
                         }
+                    } catch (Exception e) {
+                        // Log or ignore, will throw below
                     }
                 }
             }
+            throw new org.springframework.messaging.MessageDeliveryException("Unauthorized WebSocket connection");
         }
         return message;
     }

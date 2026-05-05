@@ -63,6 +63,31 @@
   --font-display: "Inter", sans-serif;
   --font-inter: "Inter", sans-serif;
   --font-sans: "Inter", sans-serif;
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes toast-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+  }
+
+  --animate-toast-in: toast-in 0.3s ease-out;
+  --animate-toast-out: toast-out 0.3s ease-in forwards;
 }
 
 /* Reset default styles and set base constraints to avoid overflow */

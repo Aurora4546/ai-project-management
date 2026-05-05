@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { CreateProjectModal } from '../components/CreateProjectModal'
-import { getAvatarColor } from '../utils'
+import { getAvatarColor, stripHtml } from '../utils'
 import { fetchProjects as apiFetchProjects, deleteProject as apiDeleteProject } from '../services/api'
 import { Layout } from '../components/Layout'
 import type { IProject } from '../types'
@@ -22,6 +23,7 @@ export const Dashboard = (): React.ReactElement => {
     const [hoveredAvatar, setHoveredAvatar] = useState<string | null>(null)
 
     const { user } = useAuth()
+    const { showToast } = useToast()
     const navigate = useNavigate()
 
     const fetchProjects = async () => {
@@ -63,6 +65,7 @@ export const Dashboard = (): React.ReactElement => {
         setIsDeletingProject(true)
         try {
             await apiDeleteProject(deleteTarget.id)
+            showToast("Project deleted successfully!", "success")
             setDeleteTarget(null)
             fetchProjects()
         } catch (error: any) {
@@ -151,7 +154,7 @@ export const Dashboard = (): React.ReactElement => {
                     </div>
                     {project.description && (
                         <p className="text-sm text-on-surface-variant line-clamp-2 mb-2">
-                            {project.description}
+                            {stripHtml(project.description)}
                         </p>
                     )}
                     <p className="text-xs font-medium text-primary/80">
@@ -162,9 +165,9 @@ export const Dashboard = (): React.ReactElement => {
 
             {/* Footer: Avatars & Metadata */}
             <div className="mt-auto px-6 py-4 bg-surface-container-low border-t border-outline-variant/30 flex justify-between items-center rounded-b-2xl overflow-visible relative">
-                <div className="flex -space-x-2">
-                    {project.leads && project.leads.map((lead, i: number) => {
-                        const avatarKey = `${project.id}-${i}`
+                <div className="flex -space-x-2 items-center">
+                    {[...(project.leads || []), ...(project.members || [])].slice(0, 2).map((member, i: number) => {
+                        const avatarKey = `${project.id}-all-${i}`
                         return (
                             <div
                                 key={i}
@@ -172,21 +175,21 @@ export const Dashboard = (): React.ReactElement => {
                                 onMouseEnter={() => setHoveredAvatar(avatarKey)}
                                 onMouseLeave={() => setHoveredAvatar(null)}
                             >
-                                <div className="w-8 h-8 rounded-full border-2 border-surface-container-low text-white flex items-center justify-center text-[10px] font-bold shadow-sm" style={{ backgroundColor: getAvatarColor(lead.email) }}>
-                                    {(lead.firstName || lead.email).charAt(0).toUpperCase()}
+                                <div className="w-8 h-8 rounded-full border-2 border-surface-container-low text-white flex items-center justify-center text-[10px] font-bold shadow-sm" style={{ backgroundColor: getAvatarColor(member.email) }}>
+                                    {(member.firstName || member.email).charAt(0).toUpperCase()}
                                 </div>
 
                                 {hoveredAvatar === avatarKey && (
                                     <div className="absolute top-full left-0 mt-2 flex flex-col items-start pointer-events-none w-max z-[100]">
                                         <div className="w-2 h-2 bg-white rotate-45 ml-3 -mb-1 border-l border-t border-slate-200"></div>
                                         <div className="bg-white text-slate-800 rounded-lg py-2 px-3 flex flex-col shadow-lg border border-slate-200">
-                                            {lead.firstName ? (
+                                            {member.firstName ? (
                                                 <>
-                                                    <span className="text-[11px] font-bold">{lead.firstName} {lead.lastName}</span>
-                                                    <span className="text-[9px] text-slate-500 font-medium">{lead.email}</span>
+                                                    <span className="text-[11px] font-bold">{member.firstName} {member.lastName}</span>
+                                                    <span className="text-[9px] text-slate-500 font-medium">{member.email}</span>
                                                 </>
                                             ) : (
-                                                <span className="text-[11px] font-bold">{lead.email}</span>
+                                                <span className="text-[11px] font-bold">{member.email}</span>
                                             )}
                                         </div>
                                     </div>
@@ -194,7 +197,13 @@ export const Dashboard = (): React.ReactElement => {
                             </div>
                         )
                     })}
+                    {([...(project.leads || []), ...(project.members || [])].length > 2) && (
+                        <div className="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-variant text-on-surface-variant flex items-center justify-center text-[10px] font-bold shadow-sm z-0 relative">
+                            +{([...(project.leads || []), ...(project.members || [])].length - 2)}
+                        </div>
+                    )}
                 </div>
+
                 <div className="text-[11px] font-medium text-on-surface-variant flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-[14px]">calendar_today</span>
                     Created {new Date(project.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -221,6 +230,7 @@ export const Dashboard = (): React.ReactElement => {
                         </button>
                     </div>
 
+                    {/* ── Managed Projects ─────────────── */}
                     <div className="mb-14">
                         <div className="flex items-center gap-3 mb-6">
                             <h2 className="text-lg font-bold text-on-surface">Managed Projects</h2>
@@ -260,11 +270,29 @@ export const Dashboard = (): React.ReactElement => {
                             </div>
                         )}
                     </div>
+
+                    {/* ── Member Projects ───────────────── */}
+                    {!isLoadingProjects && projects.some((p) => p.currentUserRole === 'PROJECT_MEMBER') && (
+                        <div className="mb-14">
+                            <div className="flex items-center gap-3 mb-6">
+                                <h2 className="text-lg font-bold text-on-surface">Member Projects</h2>
+                                <span className="text-xs font-medium text-on-surface-variant bg-surface-variant px-2.5 py-1 rounded-full">
+                                    Projects you've been added to
+                                </span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                {projects
+                                    .filter((p) => p.currentUserRole === 'PROJECT_MEMBER')
+                                    .map((project) => renderProjectCard(project, false, false))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </Layout>
 
             {isModalOpen && (
                 <CreateProjectModal
+                    isOpen={isModalOpen}
                     onClose={() => {
                         setIsModalOpen(false)
                         setEditingProject(null)

@@ -8,6 +8,7 @@ interface RichTextEditorProps {
     onChange: (val: string) => void
     placeholder?: string
     minHeight?: number
+    maxLength?: number
 }
 
 const MenuButton = ({
@@ -42,6 +43,7 @@ export const RichTextEditor = ({
     onChange,
     placeholder = 'Start writing...',
     minHeight = 180,
+    maxLength,
 }: RichTextEditorProps) => {
     const editor = useEditor({
         extensions: [
@@ -52,7 +54,10 @@ export const RichTextEditor = ({
         ],
         content: value || '',
         onUpdate: ({ editor: ed }) => {
-            onChange(ed.getHTML())
+            const html = ed.getHTML()
+            // We pass the HTML up, the parent will block the "Save" button 
+            // and show the red character count if it exceeds maxLength.
+            onChange(html)
         },
         editorProps: {
             attributes: {

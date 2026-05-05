@@ -12,4 +12,11 @@ import java.util.UUID;
 public interface ChatReadReceiptRepository extends JpaRepository<ChatReadReceipt, UUID> {
     Optional<ChatReadReceipt> findByProjectIdAndUserId(UUID projectId, Long userId);
     List<ChatReadReceipt> findAllByProjectId(UUID projectId);
+
+    /**
+     * Bulk-deletes all read receipts for a project before project deletion.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM ChatReadReceipt r WHERE r.project.id = :projectId")
+    void deleteAllByProjectId(UUID projectId);
 }

@@ -3,7 +3,10 @@ package com.projectmanagement.pmanage.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.projectmanagement.pmanage.dto.AiReportStructure;
 import com.projectmanagement.pmanage.dto.ReportResponse;
+import com.projectmanagement.pmanage.exception.AiServiceException;
+import com.projectmanagement.pmanage.exception.AiServiceException.AiErrorType;
 import com.projectmanagement.pmanage.model.*;
 import com.projectmanagement.pmanage.repository.ChatMessageRepository;
 import com.projectmanagement.pmanage.repository.IssueRepository;
@@ -84,10 +87,10 @@ public class ReportService {
                 overdueIssues, unassignedIssues);
 
         // Call AI
-        String aiResponse = callGemini(contextPrompt);
+        AiReportStructure aiResponse = callGemini(contextPrompt);
 
-        // Parse AI response into sections
-        ReportResponse response = parseAiResponse(aiResponse, project, issues.size(), completedIssues, totalMessages,
+        // Map AI response into sections
+        ReportResponse response = mapToReportResponse(aiResponse, project, issues.size(), completedIssues, totalMessages,
                 issuesByStatus, issuesByPriority, issuesByType, issuesByAssignee,
                 overdueIssues, unassignedIssues);
 
@@ -376,7 +379,21 @@ public class ReportService {
         return sb.toString();
     }
 
-    private String callGemini(String contextPrompt) {
+    /**
+     * Calls Google Gemini via Spring AI and returns a structured {@link AiReportStructure}.
+     *
+     * <p>Exceptions are classified into distinct {@link AiErrorType} values and re-thrown
+     * as {@link AiServiceException} so the global handler can return the correct HTTP status.
+     *
+     * <ul>
+     *   <li>Quota / rate-limit errors → {@code QUOTA_EXCEEDED} (HTTP 429)</li>
+     *   <li>Invalid / expired key errors → {@code INVALID_API_KEY} (HTTP 401)</li>
+     *   <li>Timeout / connection errors → {@code SERVICE_UNAVAILABLE} (HTTP 503)</li>
+     *   <li>Empty / null AI response → {@code EMPTY_RESPONSE} (HTTP 502)</li>
+     *   <li>Everything else → {@code UNKNOWN} (HTTP 500)</li>
+     * </ul>
+     */
+    private AiReportStructure callGemini(String contextPrompt) {
         String systemPrompt = """
                 You are a project reporting assistant. You receive project data (issues, chat messages, statistics)
                 and write a clear, easy-to-read project status update.
@@ -390,155 +407,113 @@ public class ReportService {
                 - Bold only key terms like issue keys, names, or status labels.
                 - Do NOT repeat the same information across sections.
                 - If there is no relevant data for a section, write one short sentence saying so.
-                
-                Respond EXACTLY in this format with these 8 section headers (use === as delimiters):
-                
-                ===EXECUTIVE_SUMMARY===
-                Write 2-4 sentences summarizing the project status. Include:
-                - Project health: **Healthy**, **At Risk**, or **Critical**
-                - Completion rate and what's driving it
-                - The single most important thing to know right now
-                
-                ===ACCOMPLISHMENTS===
-                List completed work as bullet points. For each item:
-                - Mention the issue key and who completed it
-                - Keep each bullet to one sentence
-                If nothing was completed, say so briefly.
-                
-                ===BLOCKERS===
-                List current blockers and problems:
-                - What is blocked or stalled, and why
-                - Any overdue issues with how many days overdue
-                - Workload imbalances if any
-                Keep each bullet to one sentence. Only list real problems, not hypotheticals.
-                
-                ===NEXT_STEPS===
-                List 3-5 recommended actions, ordered by priority:
-                - What should be done first and by whom
-                - Reference specific issue keys
-                Keep it actionable — each item should be something someone can act on today.
-                
-                ===TEAM_DYNAMICS===
-                Briefly describe how the team is collaborating:
-                - Chat activity level (active, quiet, etc.)
-                - Notable collaboration patterns
-                - One suggestion for improvement if applicable
-                Keep this positive and constructive. 2-4 bullet points max.
-                
-                ===SPRINT_HEALTH===
-                Quick health check in 3-4 bullets:
-                - How many items are in progress vs. the team size
-                - Any bottlenecks (e.g. too many items stuck in review)
-                - Overall health: **Excellent**, **Good**, **Needs Attention**, or **Critical**
-                
-                ===RISK_ASSESSMENT===
-                List the top 2-4 risks. For each:
-                - One sentence describing the risk
-                - Likelihood: **High** / **Medium** / **Low**
-                - One sentence on how to mitigate it
-                Only list real, data-backed risks. Do not invent risks.
-                
-                ===VELOCITY_ANALYSIS===
-                In 3-4 bullets:
-                - Current completion rate and trend
-                - Who has the most/least work assigned
-                - Where items are getting stuck (which status column)
-                - One recommendation to improve flow
-                
-                CRITICAL FORMATTING RULES:
-                - Use single-level bullet points only (- item). No nested bullets.
-                - Use **bold** sparingly — only for issue keys, names, and status labels.
-                - Do NOT use ### sub-headers inside sections. Just use bullet points.
-                - Do NOT use numbered lists. Use bullet points (- ) only.
-                - Keep the ENTIRE report concise. Each section should be 2-6 bullets, not more.
-                - No filler sentences. Every sentence should contain useful information.
                 """;
 
         try {
             ChatClient chatClient = chatClientBuilder.build();
-            String response = chatClient.prompt()
+            AiReportStructure response = chatClient.prompt()
                     .system(systemPrompt)
                     .user(contextPrompt)
                     .call()
-                    .content();
+                    .entity(AiReportStructure.class);
 
-            if (response == null || response.isBlank()) {
-                log.warn("Gemini returned an empty response");
-                return buildFallbackResponse("Gemini returned an empty response.");
+            if (response == null) {
+                log.warn("Gemini returned an empty or null structured response");
+                throw new AiServiceException(
+                        "The AI model returned an empty response. Please try again in a moment.",
+                        AiErrorType.EMPTY_RESPONSE);
             }
 
-            log.info("Gemini AI response received ({} chars). Preview: {}",
-                    response.length(),
-                    response.substring(0, Math.min(300, response.length())));
-
-            if (!response.contains("===")) {
-                log.warn("Gemini response does not contain expected section markers (===). Full response: {}", response);
-                return buildFallbackResponse("AI response was not in the expected format.");
-            }
-
+            log.info("Gemini AI structured response successfully received and parsed.");
             return response;
+
+        } catch (AiServiceException e) {
+            // Already classified — propagate as-is
+            throw e;
+
         } catch (Exception e) {
-            log.error("Failed to call Gemini AI: {} - {}", e.getClass().getSimpleName(), e.getMessage(), e);
-            return buildFallbackResponse("Error: " + e.getMessage());
+            AiErrorType errorType = classifyAiException(e);
+            String userMessage = buildUserFacingMessage(errorType, e);
+
+            log.error("AI call failed [type={}]: {} - {}",
+                    errorType, e.getClass().getSimpleName(), e.getMessage(), e);
+
+            throw new AiServiceException(userMessage, errorType, e);
         }
     }
 
-    private String buildFallbackResponse(String reason) {
-        return """
-                ===EXECUTIVE_SUMMARY===
-                Unable to generate AI analysis at this time. %s
-                The report below contains computed statistics only.
-                
-                ===ACCOMPLISHMENTS===
-                AI analysis unavailable. Please review issue statuses for completed work.
-                
-                ===BLOCKERS===
-                AI analysis unavailable. Please review high-priority issues manually.
-                
-                ===NEXT_STEPS===
-                AI analysis unavailable. Please prioritize open issues based on their priority levels.
-                
-                ===TEAM_DYNAMICS===
-                AI analysis unavailable. Please review chat activity manually.
-                
-                ===SPRINT_HEALTH===
-                AI analysis unavailable. Please review work-in-progress items manually.
-                
-                ===RISK_ASSESSMENT===
-                AI analysis unavailable. Please assess project risks manually.
-                
-                ===VELOCITY_ANALYSIS===
-                AI analysis unavailable. Please review team velocity metrics manually.
-                """.formatted(reason);
+    /**
+     * Inspects the exception chain to determine which {@link AiErrorType} best describes the failure.
+     */
+    private AiErrorType classifyAiException(Exception e) {
+        String msg = extractFullMessage(e).toLowerCase();
+
+        if (msg.contains("429") || msg.contains("quota") || msg.contains("rate limit")
+                || msg.contains("resource_exhausted") || msg.contains("too many requests")
+                || msg.contains("rate_limit_exceeded")) {
+            return AiErrorType.QUOTA_EXCEEDED;
+        }
+        if (msg.contains("401") || msg.contains("403") || msg.contains("invalid api key")
+                || msg.contains("api_key_invalid") || msg.contains("permission_denied")
+                || msg.contains("unauthenticated") || msg.contains("apikey")) {
+            return AiErrorType.INVALID_API_KEY;
+        }
+        if (msg.contains("timeout") || msg.contains("timed out") || msg.contains("503")
+                || msg.contains("502") || msg.contains("connection") || msg.contains("unavailable")
+                || msg.contains("deadline_exceeded")) {
+            return AiErrorType.SERVICE_UNAVAILABLE;
+        }
+        return AiErrorType.UNKNOWN;
     }
 
-    private ReportResponse parseAiResponse(String aiResponse, Project project,
+    /**
+     * Walks the exception cause chain to collect the most descriptive message available.
+     */
+    private String extractFullMessage(Throwable e) {
+        StringBuilder sb = new StringBuilder();
+        Throwable current = e;
+        while (current != null) {
+            if (current.getMessage() != null) sb.append(current.getMessage()).append(" ");
+            current = current.getCause();
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Returns a concise, user-friendly message for each error type.
+     */
+    private String buildUserFacingMessage(AiErrorType errorType, Exception cause) {
+        return switch (errorType) {
+            case QUOTA_EXCEEDED -> "AI report generation is temporarily unavailable: the API quota has been exceeded. " +
+                    "Please wait a moment and try again, or contact your administrator to check the API limits.";
+            case INVALID_API_KEY -> "AI report generation failed: the configured API key is invalid or has expired. " +
+                    "Please update the GOOGLE_API_KEY environment variable with a valid key.";
+            case SERVICE_UNAVAILABLE -> "AI report generation failed: the Google Gemini service is temporarily unreachable. " +
+                    "Please try again in a few minutes.";
+            case EMPTY_RESPONSE -> "AI report generation failed: the model returned an empty response. " +
+                    "Please try again.";
+            default -> "AI report generation encountered an unexpected error: " + cause.getMessage();
+        };
+    }
+
+    private ReportResponse mapToReportResponse(AiReportStructure aiResponse, Project project,
                                             long totalIssues, long completedIssues, long totalMessages,
                                             Map<String, Long> byStatus, Map<String, Long> byPriority,
                                             Map<String, Long> byType, Map<String, Long> byAssignee,
                                             long overdueIssues, long unassignedIssues) {
 
-        String executiveSummary = extractSection(aiResponse, "EXECUTIVE_SUMMARY");
-        String accomplishments = extractSection(aiResponse, "ACCOMPLISHMENTS");
-        String blockers = extractSection(aiResponse, "BLOCKERS");
-        String nextSteps = extractSection(aiResponse, "NEXT_STEPS");
-        String teamDynamics = extractSection(aiResponse, "TEAM_DYNAMICS");
-        String sprintHealth = extractSection(aiResponse, "SPRINT_HEALTH");
-        String riskAssessment = extractSection(aiResponse, "RISK_ASSESSMENT");
-        String velocityAnalysis = extractSection(aiResponse, "VELOCITY_ANALYSIS");
-
         return ReportResponse.builder()
                 .projectName(project.getName())
                 .projectKey(project.getProjectKey())
                 .generatedAt(LocalDateTime.now())
-                .executiveSummary(executiveSummary)
-                .accomplishments(accomplishments)
-                .blockers(blockers)
-                .nextSteps(nextSteps)
-                .teamDynamics(teamDynamics)
-                .sprintHealth(sprintHealth)
-                .riskAssessment(riskAssessment)
-                .velocityAnalysis(velocityAnalysis)
+                .executiveSummary(aiResponse.executiveSummary())
+                .accomplishments(aiResponse.accomplishments())
+                .blockers(aiResponse.blockers())
+                .nextSteps(aiResponse.nextSteps())
+                .teamDynamics(aiResponse.teamDynamics())
+                .sprintHealth(aiResponse.sprintHealth())
+                .riskAssessment(aiResponse.riskAssessment())
+                .velocityAnalysis(aiResponse.velocityAnalysis())
                 .issuesByStatus(byStatus)
                 .issuesByPriority(byPriority)
                 .issuesByType(byType)
@@ -549,44 +524,6 @@ public class ReportService {
                 .overdueIssues(overdueIssues)
                 .unassignedIssues(unassignedIssues)
                 .build();
-    }
-
-    private String extractSection(String response, String sectionName) {
-        if (response == null || response.isBlank()) return "Section not available.";
-
-        // Use regex to find the section content between ===SECTION_NAME=== and the next ===SOMETHING=== (or end)
-        String pattern = "===\\s*" + sectionName + "\\s*===\\s*\\n?";
-        String nextSectionPattern = "===\\s*[A-Z_]+\\s*===";
-
-        java.util.regex.Pattern startPattern = java.util.regex.Pattern.compile(pattern, java.util.regex.Pattern.CASE_INSENSITIVE);
-        java.util.regex.Matcher startMatcher = startPattern.matcher(response);
-
-        if (!startMatcher.find()) {
-            log.warn("Section '{}' not found in AI response. Response preview: {}", sectionName,
-                    response.substring(0, Math.min(200, response.length())));
-            return "Section not available.";
-        }
-
-        int contentStart = startMatcher.end();
-
-        // Find the next section marker after our content
-        java.util.regex.Pattern nextPattern = java.util.regex.Pattern.compile(nextSectionPattern);
-        java.util.regex.Matcher nextMatcher = nextPattern.matcher(response);
-
-        int contentEnd = response.length();
-        // Search for the next section marker AFTER our section's content start
-        int searchFrom = contentStart;
-        while (nextMatcher.find(searchFrom)) {
-            // Make sure we don't match our own marker
-            if (nextMatcher.start() > contentStart) {
-                contentEnd = nextMatcher.start();
-                break;
-            }
-            searchFrom = nextMatcher.end();
-        }
-
-        String content = response.substring(contentStart, contentEnd).trim();
-        return content.isEmpty() ? "No data available for this section." : content;
     }
 
     private <T> Map<String, Long> computeGroupCounts(List<T> items, java.util.function.Function<T, String> grouper) {

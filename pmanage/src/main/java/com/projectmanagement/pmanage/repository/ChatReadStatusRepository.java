@@ -13,4 +13,9 @@ public interface ChatReadStatusRepository extends JpaRepository<ChatReadStatus, 
     List<ChatReadStatus> findByUserId(Long userId);
     List<ChatReadStatus> findByUserIdAndProjectId(Long userId, UUID projectId);
     Optional<ChatReadStatus> findByUserIdAndProjectIdAndPeerId(Long userId, UUID projectId, Long peerId);
+
+    /**
+     * Bulk-deletes all read-status records for a project before project deletion.
+     */
+    void deleteByProjectId(UUID projectId);
 }

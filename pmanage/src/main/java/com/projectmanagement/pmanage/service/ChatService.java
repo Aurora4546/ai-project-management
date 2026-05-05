@@ -85,6 +85,8 @@ public class ChatService {
     private void processMentions(Project project, User sender, ChatMessage message) {
         if (message.getContent() == null) return;
         String content = message.getContent();
+        
+        List<AppNotification> notifications = new ArrayList<>();
 
         project.getMembers().forEach(member -> {
             User u = member.getUser();
@@ -108,12 +110,16 @@ public class ChatService {
                 notif.setDirect(message.getRecipient() != null);
                 notif.setType("MENTION");
                 notif.setRead(false);
-                appNotificationRepository.save(notif);
-                
-                // Real-time push to the user's active session for the bell icon
-                messagingTemplate.convertAndSendToUser(u.getEmail(), "/queue/app-notifications", notif);
+                notifications.add(notif);
             }
         });
+        
+        if (!notifications.isEmpty()) {
+            appNotificationRepository.saveAll(notifications);
+            notifications.forEach(notif -> 
+                messagingTemplate.convertAndSendToUser(notif.getRecipient().getEmail(), "/queue/app-notifications", notif)
+            );
+        }
     }
 
     @Transactional
@@ -301,15 +307,12 @@ public class ChatService {
 
 
     public List<UserSearchResponse> getOnlineUsers(UUID projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
-        
         // Online threshold: 1 minute
         LocalDateTime threshold = LocalDateTime.now().minusMinutes(1);
 
-        return project.getMembers().stream()
-                .map(pm -> pm.getUser())
-                .filter(u -> u.getLastSeenAt() != null && u.getLastSeenAt().isAfter(threshold))
+        List<User> onlineUsers = userRepository.findOnlineUsersByProjectId(projectId, threshold);
+        
+        return onlineUsers.stream()
                 .map(u -> UserSearchResponse.builder()
                         .id(u.getId())
                         .email(u.getEmail())
@@ -321,9 +324,7 @@ public class ChatService {
 
     @Transactional
     public void updatePresence(User user) {
-        User u = userRepository.findById(user.getId()).orElse(user);
-        u.setLastSeenAt(LocalDateTime.now());
-        userRepository.save(u);
+        userRepository.updateLastSeenAt(user.getId(), LocalDateTime.now());
     }
 
     private ChatMessageResponse mapToResponse(ChatMessage message) {
@@ -364,6 +365,7 @@ public class ChatService {
     public UnreadCountsResponse getUnreadChatCounts(User user) {
         Map<UUID, Long> projectCounts = new java.util.HashMap<>();
         Map<UUID, Map<Long, Long>> dmCounts = new java.util.HashMap<>();
+        LocalDateTime defaultDate = LocalDateTime.of(2000, 1, 1, 0, 0);
 
         // Get all projects the user is a member of
         projectMemberRepository.findByUserId(user.getId()).forEach(pm -> {
@@ -372,24 +374,23 @@ public class ChatService {
             // 1. Calculate General Channel Unread Count
             LocalDateTime generalLastRead = readStatusRepository.findByUserIdAndProjectIdAndPeerId(user.getId(), projectId, null)
                 .map(ChatReadStatus::getLastReadAt)
-                .orElse(LocalDateTime.of(2000, 1, 1, 0, 0));
+                .orElse(defaultDate);
             
             long channelCount = messageRepository.countUnreadChannelMessages(projectId, generalLastRead, user.getId());
             if (channelCount > 0) projectCounts.put(projectId, channelCount);
 
-            // 2. Calculate DM Unread Counts for each member in this project
+            // 2. Calculate DM Unread Counts using grouped aggregate query
             Map<Long, Long> projectDms = new java.util.HashMap<>();
-            pm.getProject().getMembers().forEach(member -> {
-                User peer = member.getUser();
-                if (peer.getId().equals(user.getId())) return;
+            List<Object[]> dmResults = messageRepository.countUnreadDirectMessagesGrouped(projectId, user.getId(), defaultDate);
+            
+            for (Object[] row : dmResults) {
+                Long senderId = (Long) row[0];
+                Long count = ((Number) row[1]).longValue();
+                if (count > 0) {
+                    projectDms.put(senderId, count);
+                }
+            }
 
-                LocalDateTime dmLastRead = readStatusRepository.findByUserIdAndProjectIdAndPeerId(user.getId(), projectId, peer.getId())
-                    .map(ChatReadStatus::getLastReadAt)
-                    .orElse(LocalDateTime.of(2000, 1, 1, 0, 0));
-                
-                long dmCount = messageRepository.countUnreadDirectMessages(projectId, user.getId(), peer.getId(), dmLastRead);
-                if (dmCount > 0) projectDms.put(peer.getId(), dmCount);
-            });
             if (!projectDms.isEmpty()) dmCounts.put(projectId, projectDms);
         });
 

@@ -14,10 +14,10 @@
 - **Chat History Sync Fix:** Aligned `ChatSearch` and file/message loading with the `activeChannel` state (project vs. DM) to prevent orphaned or irrelevant records.
 - **Modal Z-Index Fix:** Adjusted top nav bar z-index in `Layout.tsx` to sit behind modal windows.
 - **Week 7 Tutorial:** Created `tutorials/week7_tutorial.md` covering Spring Data JPA repositories.
+- **Week 8 & 9 Tutorial:** Created `tutorials/week8_9_tutorial.md` covering AI Summarization (Gemini API) and PDF Reporting (OpenPDF).
 
 ## Next Steps
-- Implement **Week 8: Reporting Module** — OpenPDF PDF generation endpoints for management reports.
-- Implement **Week 9: AI Summarization** — Google Gemini API integration via `spring-ai` for task history and chat transcript summarization.
+- Implement **Week 10: Testing** — JUnit backend tests, Code Freeze.
 - Consider decomposing oversized components (`Backlog.tsx`, `UpdateIssueModal.tsx`, `AgileBoard.tsx`, `TeamChat.tsx`).
 
 ## Active Decisions and Considerations

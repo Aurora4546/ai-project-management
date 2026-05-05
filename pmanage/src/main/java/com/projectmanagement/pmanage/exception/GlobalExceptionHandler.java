@@ -59,6 +59,32 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
+    /**
+     * Handles AI service failures with HTTP status codes that accurately reflect the failure:
+     * <ul>
+     *   <li>QUOTA_EXCEEDED  → 429 Too Many Requests</li>
+     *   <li>INVALID_API_KEY → 401 Unauthorized</li>
+     *   <li>SERVICE_UNAVAILABLE / EMPTY_RESPONSE → 503 Service Unavailable</li>
+     *   <li>UNKNOWN → 500 Internal Server Error</li>
+     * </ul>
+     */
+    @ExceptionHandler(AiServiceException.class)
+    public ResponseEntity<Map<String, String>> handleAiServiceException(AiServiceException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+        error.put("errorType", ex.getErrorType().name());
+
+        HttpStatus status = switch (ex.getErrorType()) {
+            case QUOTA_EXCEEDED      -> HttpStatus.TOO_MANY_REQUESTS;       // 429
+            case INVALID_API_KEY     -> HttpStatus.UNAUTHORIZED;            // 401
+            case SERVICE_UNAVAILABLE,
+                 EMPTY_RESPONSE      -> HttpStatus.SERVICE_UNAVAILABLE;     // 503
+            default                  -> HttpStatus.INTERNAL_SERVER_ERROR;   // 500
+        };
+
+        return ResponseEntity.status(status).body(error);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {

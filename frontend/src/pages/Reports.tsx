@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useToast } from '../context/ToastContext'
 import { Layout } from '../components/Layout'
 import { generateProjectReport, downloadProjectReportPdf, getReportHistory, deleteReport as deleteReportApi } from '../services/api'
 import type { IReport } from '../types'
@@ -78,6 +79,7 @@ const ShimmerStat = () => (
 // ── Main Component ─────────────────────────────────
 export const Reports = (): React.ReactElement => {
   const { id: projectId } = useParams<{ id: string }>()
+  const { showToast } = useToast()
   const [report, setReport] = useState<IReport | null>(null)
   const [reportHistory, setReportHistory] = useState<IReport[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -122,6 +124,7 @@ export const Reports = (): React.ReactElement => {
     try {
       const data = await generateProjectReport(projectId)
       setReport(data)
+      showToast("Report generated successfully!", "success")
       // Prepend to history
       setReportHistory(prev => [data, ...prev])
     } catch (err: any) {
@@ -139,6 +142,7 @@ export const Reports = (): React.ReactElement => {
       } else {
         setError(serverMessage || `Report generation failed (Error ${status || 'unknown'}). Please try again.`)
       }
+      showToast(serverMessage || "Failed to generate report", "error")
       console.error('Report generation failed:', err)
     } finally {
       setIsLoading(false)
@@ -154,6 +158,7 @@ export const Reports = (): React.ReactElement => {
     if (!projectId) return
     try {
       await deleteReportApi(projectId, reportId)
+      showToast("Report deleted successfully!", "success")
       setReportHistory(prev => prev.filter(r => r.id !== reportId))
       if (report?.id === reportId) {
         const remaining = reportHistory.filter(r => r.id !== reportId)

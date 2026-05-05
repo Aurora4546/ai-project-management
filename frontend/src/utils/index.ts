@@ -96,3 +96,19 @@ export const getIssueTheme = (type: string) => {
             }
     }
 }
+
+/**
+ * Strips HTML tags from a string and decodes HTML entities for plain text display.
+ * Uses DOMParser for robust parsing of entities like &nbsp; and handling various tag structures.
+ */
+export const stripHtml = (html: string | null | undefined): string => {
+  if (!html) return ''
+  
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    return doc.body.textContent || ''
+  } catch (error) {
+    // Fallback for non-browser environments or parsing errors
+    return html.replace(/<[^>]*>?/gm, '')
+  }
+}

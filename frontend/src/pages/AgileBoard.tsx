@@ -8,6 +8,7 @@ import * as api from '../services/api'
 import type { IIssue, ILabel, GroupBy, FilterState } from '../types'
 import { getAvatarColor, getIssueTheme } from '../utils'
 import { GenericDropdown } from '../components/GenericDropdown'
+import { useToast } from '../context/ToastContext'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import type { DropResult } from '@hello-pangea/dnd'
 
@@ -15,6 +16,7 @@ import type { DropResult } from '@hello-pangea/dnd'
 
 export const AgileBoard = (): React.ReactElement => {
     const { id: projectId } = useParams<{ id: string }>()
+    const { showToast } = useToast()
     const [searchParams, setSearchParams] = useSearchParams()
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
@@ -51,6 +53,7 @@ export const AgileBoard = (): React.ReactElement => {
         if (!issueToDelete) return;
         try {
             await api.deleteIssue(issueToDelete.id.toString());
+            showToast("Issue deleted successfully!", "success")
             setIssues(prev => prev.filter(i => i.id !== issueToDelete.id));
             setIssueToDelete(null);
         } catch (error) {
