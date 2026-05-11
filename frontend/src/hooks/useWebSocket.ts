@@ -31,7 +31,8 @@ export const useWebSocket = ({
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const socket = new SockJS('http://localhost:8080/ws');
+        const wsUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+        const socket = new SockJS(`${wsUrl}/ws`);
         const client = new Client({
             webSocketFactory: () => socket,
             connectHeaders: {

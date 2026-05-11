@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -43,7 +43,6 @@ export const RichTextEditor = ({
     onChange,
     placeholder = 'Start writing...',
     minHeight = 180,
-    maxLength,
 }: RichTextEditorProps) => {
     const editor = useEditor({
         extensions: [

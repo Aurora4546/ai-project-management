@@ -5,6 +5,8 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+
 const validationSchema = Yup.object().shape({
     first_name: Yup.string()
         .min(2, 'First name must be at least 2 characters')
@@ -24,7 +26,7 @@ const validationSchema = Yup.object().shape({
         .test('checkEmailUnique', 'This email is already in use. Please use a different email.', async function (value) {
             if (!value) return true;
             try {
-                const response = await axios.get(`http://localhost:8080/api/v1/auth/check-email?email=${value}`);
+                const response = await axios.get(`${API_BASE_URL}/api/v1/auth/check-email?email=${value}`);
                 return !response.data;
             } catch (error) {
                 return true;
@@ -57,7 +59,7 @@ export const Register = () => {
         onSubmit: async (values, { setSubmitting }) => {
             setApiError(null);
             try {
-                const response = await axios.post('http://localhost:8080/api/v1/auth/register', {
+                const response = await axios.post(`${API_BASE_URL}/api/v1/auth/register`, {
                     firstName: values.first_name,
                     lastName: values.last_name,
                     email: values.email,

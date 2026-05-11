@@ -5,6 +5,8 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+
 const validationSchema = Yup.object().shape({
     email: Yup.string().email('Invalid email format').required('Email is required'),
     password: Yup.string().required('Password is required'),
@@ -28,7 +30,7 @@ export const Login = () => {
             setApiError(null);
             setSuccessMsg(null);
             try {
-                const response = await axios.post('http://localhost:8080/api/v1/auth/login', {
+                const response = await axios.post(`${API_BASE_URL}/api/v1/auth/login`, {
                     email: values.email,
                     password: values.password
                 });
