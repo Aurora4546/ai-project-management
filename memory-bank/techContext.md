@@ -5,8 +5,8 @@
 - **Frontend:** React.js 18+ (Hooks, Context, Formik, Yup), Vite, TypeScript
 - **Database:** PostgreSQL (managed locally via pgAdmin)
 - **Real-Time Communication:** Spring Boot WebSockets (STOMP/SockJS) via `@stomp/stompjs` + `sockjs-client`
-- **AI Integration:** Google Gemini API (`spring-ai-google-genai-starter`) — planned
-- **Reporting:** OpenPDF — planned
+- **AI Integration:** Google Gemini API (`spring-ai-google-genai-starter`)
+- **Reporting:** OpenPDF
 - **Testing:** JUnit 5 (Backend)
 - **Rich Text:** CKEditor integration (`RichTextEditor.tsx`)
 - **HTTP Client:** Axios with JWT interceptor
@@ -42,5 +42,5 @@
   - Barrel exports via `index.ts` in each directory.
 
 ## Key Dependencies & Libraries
-- **Backend:** spring-boot-starter-web, spring-boot-starter-data-jpa, spring-boot-starter-websocket, spring-boot-starter-security, lombok, postgresql driver, spring-ai-google-genai-starter (planned)
+- **Backend:** spring-boot-starter-web, spring-boot-starter-data-jpa, spring-boot-starter-websocket, spring-boot-starter-security, lombok, postgresql driver, spring-ai-google-genai-starter, openpdf
 - **Frontend:** react, react-router-dom, axios, formik, yup, @stomp/stompjs, sockjs-client, @ckeditor/ckeditor5-react, tailwindcss

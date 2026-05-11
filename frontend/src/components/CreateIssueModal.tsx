@@ -145,6 +145,9 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
     const [projectMembers, setProjectMembers] = useState<Option[]>([]);
     const [parentId, setParentId] = useState<string | number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isAiAssigning, setIsAiAssigning] = useState(false);
+    const [aiReasoning, setAiReasoning] = useState<string | null>(null);
+    const [showAiReasoning, setShowAiReasoning] = useState(true);
     
     // Date Popover States
     const [isStartDateOpen, setIsStartDateOpen] = useState(false);
@@ -223,7 +226,8 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                 parentId: parentId === 'none' || parentId === null ? null : parentId,
                 startDate: startDate || null,
                 endDate: endDate || null,
-                labels
+                labels,
+                aiAssignmentReason: aiReasoning
             };
             
             await api.createIssue(request);
@@ -242,6 +246,39 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
             console.error('Failed to create issue:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleAiAssign = async () => {
+        if (!title.trim()) {
+            showToast("Please enter a title before using AI assign", "error");
+            return;
+        }
+
+        setIsAiAssigning(true);
+        try {
+            const request = {
+                projectId,
+                title: title,
+                description: description,
+                type: issueType.toUpperCase(),
+                priority: priority.toUpperCase()
+            };
+            
+            const response = await api.aiAssignIssue(request);
+            if (response.assigneeId) {
+                setAssigneeId(response.assigneeId.toString());
+                setAiReasoning(response.reason);
+                setShowAiReasoning(true);
+                showToast("AI Assignment successful", "success");
+            } else {
+                showToast("AI couldn't find a suitable assignee.", "error");
+            }
+        } catch (error) {
+            console.error('Failed to auto-assign:', error);
+            showToast("Failed to use AI assign", "error");
+        } finally {
+            setIsAiAssigning(false);
         }
     };
 
@@ -356,14 +393,66 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
 
                     <div className="flex gap-6">
                         <div className="w-1/2">
-                            <label className="block text-[10px] font-bold text-slate-500 tracking-wider mb-2 uppercase">Assignee</label>
-                            <CustomDropdown options={projectMembers} value={assigneeId} onChange={setAssigneeId} placeholder="Unassigned" showAvatar />
+                            <div className="flex items-center justify-between mb-2 h-[24px]">
+                                <label className="block text-[10px] font-bold text-slate-500 tracking-wider uppercase">Assignee</label>
+                                <div className="flex items-center gap-2">
+                                    {aiReasoning && (
+                                        <button
+                                            onClick={() => setShowAiReasoning(!showAiReasoning)}
+                                            className={`flex items-center justify-center p-1 rounded transition-colors ${
+                                                showAiReasoning ? 'text-purple-600 bg-purple-50' : 'text-slate-400 hover:bg-slate-50'
+                                            }`}
+                                            title={showAiReasoning ? "Hide AI Insight" : "Show AI Insight"}
+                                        >
+                                            <span className="material-symbols-outlined text-[16px]">
+                                                {showAiReasoning ? 'visibility' : 'visibility_off'}
+                                            </span>
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={handleAiAssign}
+                                        disabled={isAiAssigning || !title.trim()}
+                                        title="AI Auto-Assign"
+                                        className={`flex items-center justify-center p-1 rounded transition-colors ${
+                                            isAiAssigning 
+                                                ? 'text-purple-300 cursor-not-allowed animate-pulse' 
+                                                : title.trim() 
+                                                    ? 'text-purple-600 hover:bg-purple-50' 
+                                                    : 'text-slate-300 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <CustomDropdown options={projectMembers} value={assigneeId} onChange={(val) => {
+                                setAssigneeId(val);
+                                setAiReasoning(null);
+                            }} placeholder="Unassigned" showAvatar />
                         </div>
                         <div className="w-1/2">
-                            <label className="block text-[10px] font-bold text-slate-500 tracking-wider mb-2 uppercase">Priority</label>
+                            <div className="flex items-center justify-between mb-2 h-[24px]">
+                                <label className="block text-[10px] font-bold text-slate-500 tracking-wider uppercase">Priority</label>
+                            </div>
                             <CustomDropdown options={PRIORITIES} value={priority} onChange={setPriority} placeholder="Select priority" />
                         </div>
                     </div>
+
+                    {aiReasoning && showAiReasoning && (
+                        <div className="p-4 bg-purple-50/80 border border-purple-100 rounded-xl text-[13px] text-purple-700 flex gap-4 relative animate-in fade-in slide-in-from-top-1 duration-300 shadow-sm max-w-xl mx-auto w-full group overflow-hidden">
+                            <span className="material-symbols-outlined text-[18px] shrink-0 text-purple-500">auto_awesome</span>
+                            <div className="pr-8 leading-relaxed">
+                                <span className="font-bold">AI Insight:</span> {aiReasoning}
+                            </div>
+                            <button 
+                                onClick={() => setShowAiReasoning(false)}
+                                className="absolute top-3 right-3 text-purple-400 hover:text-purple-600 transition-colors opacity-0 group-hover:opacity-100"
+                                aria-label="Hide insight"
+                            >
+                                <span className="material-symbols-outlined text-[16px]">close</span>
+                            </button>
+                        </div>
+                    )}
 
                     <div>
                         <label className="block text-[10px] font-bold text-slate-500 tracking-wider mb-2 uppercase">Parent Issue</label>

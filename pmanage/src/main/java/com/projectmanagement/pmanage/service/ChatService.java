@@ -327,7 +327,7 @@ public class ChatService {
         userRepository.updateLastSeenAt(user.getId(), LocalDateTime.now());
     }
 
-    private ChatMessageResponse mapToResponse(ChatMessage message) {
+    public ChatMessageResponse mapToResponse(ChatMessage message) {
         boolean isEdited = message.getUpdatedAt() != null && 
                           message.getCreatedAt() != null && 
                           !message.getUpdatedAt().isEqual(message.getCreatedAt());
@@ -348,7 +348,7 @@ public class ChatService {
                 .build();
     }
 
-    private ChatFileResponse mapToFileResponse(ChatFileAttachment attachment) {
+    public ChatFileResponse mapToFileResponse(ChatFileAttachment attachment) {
         ChatFileResponse attResponse = new ChatFileResponse();
         attResponse.setId(attachment.getId());
         attResponse.setFileName(attachment.getFileName());
@@ -362,6 +362,7 @@ public class ChatService {
         return attResponse;
     }
 
+    @Transactional(readOnly = true)
     public UnreadCountsResponse getUnreadChatCounts(User user) {
         Map<UUID, Long> projectCounts = new java.util.HashMap<>();
         Map<UUID, Map<Long, Long>> dmCounts = new java.util.HashMap<>();

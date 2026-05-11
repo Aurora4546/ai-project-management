@@ -11,7 +11,8 @@ import type {
   IChatMessage,
   IChatAttachment,
   IOnlineUser,
-  IReport
+  IReport,
+  IAiAssignmentResponse
 } from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
@@ -83,6 +84,11 @@ export const updateIssue = async (issueId: string, request: any): Promise<IIssue
 
 export const deleteIssue = async (issueId: string): Promise<void> => {
   await api.delete(`/api/issues/${issueId}`)
+}
+
+export const aiAssignIssue = async (request: any): Promise<IAiAssignmentResponse> => {
+  const { data } = await api.post<IAiAssignmentResponse>('/api/issues/ai-assign', request)
+  return data
 }
 
 export const fetchIssueComments = async (issueId: string): Promise<IComment[]> => {

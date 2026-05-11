@@ -31,6 +31,7 @@ public class IssueResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Double position;
+    private String aiAssignmentReason;
 
     // Getters and Setters
     public Double getPosition() { return position; }
@@ -78,4 +79,6 @@ public class IssueResponse {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public String getAiAssignmentReason() { return aiAssignmentReason; }
+    public void setAiAssignmentReason(String aiAssignmentReason) { this.aiAssignmentReason = aiAssignmentReason; }
 }

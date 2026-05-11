@@ -1,4 +1,5 @@
 package com.projectmanagement.pmanage.dto;
+// Refresh
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,4 +46,8 @@ public class ReportResponse {
     private long totalMessages;
     private long overdueIssues;
     private long unassignedIssues;
+
+    // Snapshot data for historical viewing
+    private List<IssueResponse> issueSnapshots;
+    private List<ChatMessageResponse> messageSnapshots;
 }

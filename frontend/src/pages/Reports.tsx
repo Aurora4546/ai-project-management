@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
 import { Layout } from '../components/Layout'
-import { generateProjectReport, downloadProjectReportPdf, getReportHistory, deleteReport as deleteReportApi } from '../services/api'
+import { generateProjectReport, downloadProjectReportPdf, getReportHistory, deleteReport as deleteReportApi, getReportById } from '../services/api'
 import type { IReport } from '../types'
 import { ReportDetailsModal } from '../components/ReportDetailsModal'
 import {
@@ -84,6 +84,7 @@ export const Reports = (): React.ReactElement => {
   const [reportHistory, setReportHistory] = useState<IReport[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
+  const [isReportLoading, setIsReportLoading] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -97,7 +98,7 @@ export const Reports = (): React.ReactElement => {
       .then(history => {
         setReportHistory(history)
         if (history.length > 0) {
-          setReport(history[0])
+          handleSelectReport(history[0])
         }
       })
       .catch(err => {
@@ -149,8 +150,22 @@ export const Reports = (): React.ReactElement => {
     }
   }
 
-  const handleSelectReport = (selected: IReport) => {
-    setReport(selected)
+  const handleSelectReport = async (selected: IReport) => {
+    if (!projectId || !selected.id) return
+    if (report?.id === selected.id) return
+    
+    setIsReportLoading(true)
+    try {
+      const fullReport = await getReportById(projectId, selected.id)
+      setReport(fullReport)
+    } catch (err) {
+      console.error('Failed to load report details:', err)
+      showToast("Failed to load report details", "error")
+      // Fallback to summary data from history list
+      setReport(selected)
+    } finally {
+      setIsReportLoading(false)
+    }
   }
 
   const handleDeleteReport = async (reportId: string, e: React.MouseEvent) => {
@@ -356,29 +371,31 @@ export const Reports = (): React.ReactElement => {
             </div>
           )}
 
-          {/* Loading State */}
-          {isLoading && (
+          {/* Shimmer / Skeleton Loader — only during main loading or first lazy load */}
+          {(isLoading || (isReportLoading && !report)) && (
             <div className="space-y-6">
-              {/* AI Processing Banner */}
-              <div className="bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 rounded-2xl p-6 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIi8+PC9zdmc+')] opacity-30" />
-                <div className="relative flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <span className="material-symbols-outlined text-[24px] animate-pulse">neurology</span>
+              {/* Only show AI Banner during NEW report generation */}
+              {isLoading && (
+                <div className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-8 text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
+                  <div className="relative flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                      <span className="material-symbols-outlined text-[24px] animate-pulse">neurology</span>
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg">AI is analyzing your project...</h3>
+                      <p className="text-white/80 text-sm mt-0.5">
+                        Reading chat history, analyzing issues, and generating insights. This may take 15-30 seconds.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-lg">AI is analyzing your project...</h3>
-                    <p className="text-white/80 text-sm mt-0.5">
-                      Reading chat history, analyzing issues, and generating insights. This may take 15-30 seconds.
-                    </p>
+                  {/* Animated progress bar */}
+                  <div className="mt-4 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-white/60 rounded-full animate-[shimmer_2s_ease-in-out_infinite]"
+                      style={{ width: '60%', animation: 'shimmer 2s ease-in-out infinite' }} />
                   </div>
                 </div>
-                {/* Animated progress bar */}
-                <div className="mt-4 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                  <div className="h-full bg-white/60 rounded-full animate-[shimmer_2s_ease-in-out_infinite]"
-                    style={{ width: '60%', animation: 'shimmer 2s ease-in-out infinite' }} />
-                </div>
-              </div>
+              )}
 
               {/* Skeleton Grid */}
               <div className="grid grid-cols-4 gap-4">
@@ -413,13 +430,13 @@ export const Reports = (): React.ReactElement => {
 
           {/* Report Content */}
           {report && !isLoading && (
-            <div className="space-y-6 pb-12">
-              {/* Active Report Indicator */}
-              <div className="flex items-center gap-3 text-xs text-slate-500 bg-slate-50 rounded-xl px-4 py-2.5 border border-slate-200/60">
-                <span className="material-symbols-outlined text-[16px] text-indigo-400">schedule</span>
+            <div className={`space-y-6 pb-12 transition-opacity duration-300 ${isReportLoading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+              {/* Report Timestamp */}
+              <div className="flex items-center gap-2 text-xs text-slate-400 px-1">
+                <span className="material-symbols-outlined text-[16px]">schedule</span>
                 <span>
-                  Report generated on <strong className="text-slate-700">{new Date(report.generatedAt).toLocaleString()}</strong>
-                  {report.generatedByName && <> by <strong className="text-slate-700">{report.generatedByName}</strong></>}
+                  Generated on {new Date(report?.generatedAt || '').toLocaleString()} 
+                  {report?.generatedByName && <> by {report.generatedByName}</>}
                 </span>
               </div>
 
@@ -711,6 +728,7 @@ export const Reports = (): React.ReactElement => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         projectId={projectId!}
+        report={report}
         reportType={modalType}
       />
     </Layout>

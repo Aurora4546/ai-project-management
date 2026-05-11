@@ -3,8 +3,7 @@ package com.projectmanagement.pmanage.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.projectmanagement.pmanage.dto.AiReportStructure;
-import com.projectmanagement.pmanage.dto.ReportResponse;
+import com.projectmanagement.pmanage.dto.*;
 import com.projectmanagement.pmanage.exception.AiServiceException;
 import com.projectmanagement.pmanage.exception.AiServiceException.AiErrorType;
 import com.projectmanagement.pmanage.model.*;
@@ -39,8 +38,9 @@ public class ReportService {
     private final IssueRepository issueRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ProjectReportRepository projectReportRepository;
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final IssueService issueService;
+    private final ChatService chatService;
+    private final ObjectMapper objectMapper;
 
     private static final int MAX_CHAT_MESSAGES = 200;
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -89,10 +89,21 @@ public class ReportService {
         // Call AI
         AiReportStructure aiResponse = callGemini(contextPrompt);
 
+        // Map snapshots for historical viewing (minimized to save space)
+        List<IssueResponse> issueSnapshots = issues.stream()
+                .map(issueService::mapToResponse)
+                .map(this::minimizeIssueResponse)
+                .collect(Collectors.toList());
+        List<ChatMessageResponse> messageSnapshots = chatMessages.stream()
+                .map(chatService::mapToResponse)
+                .collect(Collectors.toList());
+
         // Map AI response into sections
         ReportResponse response = mapToReportResponse(aiResponse, project, issues.size(), completedIssues, totalMessages,
                 issuesByStatus, issuesByPriority, issuesByType, issuesByAssignee,
                 overdueIssues, unassignedIssues);
+        response.setIssueSnapshots(issueSnapshots);
+        response.setMessageSnapshots(messageSnapshots);
 
         // Persist the report
         ProjectReport saved = persistReport(project, currentUser, response,
@@ -103,23 +114,22 @@ public class ReportService {
         return response;
     }
 
-    /**
-     * Retrieves all saved reports for a project, ordered by newest first.
-     */
+    @Transactional(readOnly = true)
     public List<ReportResponse> getReportHistory(UUID projectId) {
         return projectReportRepository.findByProjectIdOrderByCreatedAtDesc(projectId)
                 .stream()
-                .map(this::entityToResponse)
+                .map(entity -> entityToResponse(entity, false))
                 .collect(Collectors.toList());
     }
 
     /**
      * Retrieves a single saved report by ID.
      */
+    @Transactional(readOnly = true)
     public ReportResponse getReportById(UUID reportId) {
         ProjectReport entity = projectReportRepository.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("Report not found"));
-        return entityToResponse(entity);
+        return entityToResponse(entity, true);
     }
 
     /**
@@ -156,11 +166,13 @@ public class ReportService {
         entity.setIssuesByPriorityJson(toJson(byPriority));
         entity.setIssuesByTypeJson(toJson(byType));
         entity.setIssuesByAssigneeJson(toJson(byAssignee));
+        entity.setIssueSnapshotsJson(toJsonList(response.getIssueSnapshots()));
+        entity.setMessageSnapshotsJson(toJsonList(response.getMessageSnapshots()));
         return projectReportRepository.save(entity);
     }
 
-    private ReportResponse entityToResponse(ProjectReport entity) {
-        return ReportResponse.builder()
+    private ReportResponse entityToResponse(ProjectReport entity, boolean includeSnapshots) {
+        ReportResponse.ReportResponseBuilder builder = ReportResponse.builder()
                 .id(entity.getId().toString())
                 .projectName(entity.getProjectName())
                 .projectKey(entity.getProjectKey())
@@ -182,8 +194,30 @@ public class ReportService {
                 .completedIssues(entity.getCompletedIssues())
                 .totalMessages(entity.getTotalMessages())
                 .overdueIssues(entity.getOverdueIssues())
-                .unassignedIssues(entity.getUnassignedIssues())
-                .build();
+                .unassignedIssues(entity.getUnassignedIssues());
+
+        if (includeSnapshots) {
+            builder.issueSnapshots(fromJsonList(entity.getIssueSnapshotsJson(), new TypeReference<List<IssueResponse>>() {}))
+                   .messageSnapshots(fromJsonList(entity.getMessageSnapshotsJson(), new TypeReference<List<ChatMessageResponse>>() {}));
+        }
+
+        return builder.build();
+    }
+
+    private IssueResponse minimizeIssueResponse(IssueResponse original) {
+        IssueResponse minimal = new IssueResponse();
+        minimal.setId(original.getId());
+        minimal.setIssueKey(original.getIssueKey());
+        minimal.setTitle(original.getTitle());
+        minimal.setType(original.getType());
+        minimal.setStatus(original.getStatus());
+        minimal.setPriority(original.getPriority());
+        minimal.setAssigneeName(original.getAssigneeName());
+        minimal.setAssigneeId(original.getAssigneeId());
+        minimal.setAssigneeEmail(original.getAssigneeEmail());
+        minimal.setEndDate(original.getEndDate());
+        minimal.setLabels(original.getLabels());
+        return minimal;
     }
 
     private String toJson(Map<String, Long> map) {
@@ -202,6 +236,25 @@ public class ReportService {
         } catch (JsonProcessingException e) {
             log.error("Failed to deserialize JSON to map", e);
             return Collections.emptyMap();
+        }
+    }
+
+    private String toJsonList(List<?> list) {
+        try {
+            return objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize list to JSON", e);
+            return "[]";
+        }
+    }
+
+    private <T> List<T> fromJsonList(String json, TypeReference<List<T>> typeReference) {
+        if (json == null || json.isBlank()) return Collections.emptyList();
+        try {
+            return objectMapper.readValue(json, typeReference);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize JSON to list", e);
+            return Collections.emptyList();
         }
     }
 

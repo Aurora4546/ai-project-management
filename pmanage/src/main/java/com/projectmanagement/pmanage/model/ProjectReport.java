@@ -71,6 +71,12 @@ public class ProjectReport {
     @Column(columnDefinition = "TEXT")
     private String issuesByAssigneeJson;
 
+    @Column(columnDefinition = "TEXT")
+    private String issueSnapshotsJson;
+
+    @Column(columnDefinition = "TEXT")
+    private String messageSnapshotsJson;
+
     private long totalIssues;
     private long completedIssues;
     private long totalMessages;

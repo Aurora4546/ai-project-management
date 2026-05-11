@@ -1,20 +1,20 @@
 # Active Context
 
 ## Current Work Focus
-- All core features through **Week 7 (Sync Chat)** are complete and polished.
-- Recent work was focused on refining the chat notification system: global unread counts, mention-based persistent notifications, toast styling, deep-link navigation to specific messages, and DM-specific behavior.
-- Next milestone: **Week 8 (Reporting)** — PDF management report generation via OpenPDF.
+- All core features through **Week 9 (AI Summarization)** are complete and polished.
+- Recent work was focused on implementing PDF reporting, expanding the AI summarization system into 8 distinct data-driven sections, enhancing the UI for reports, and adding robust input validation for issue modals.
+- Next milestone: **Week 10 (Testing)** — JUnit backend tests, Code Freeze.
 
 ## Recent Changes (from conversation history)
+- **AI Reporting Enhancements:** Expanded the Gemini API integration to generate 8 comprehensive narrative sections (Executive Summary, Accomplishments, Blockers, Next Steps, Team Dynamics, Sprint Health, Risk Assessment, and Velocity Analysis). Improved frontend rendering with `NarrativeCard` and contextual icons in `ReportDetailsModal`.
+- **Issue Validation Feedback:** Enforced character limits for issue titles (max 50) and descriptions (max 500) with intuitive visual feedback in create/update modals.
+- **Chat Styling Standardization:** Applied global `font-inter` to the chat feature typography for consistency.
+- **Week 8 & 9 Tutorial:** Created `tutorials/week8_9_tutorial.md` covering AI Summarization (Gemini API) and PDF Reporting (OpenPDF).
 - **Chat Notification Navigation:** Fixed notification navigation to pass `messageId` and `isDirect` context to toasts and dropdowns. Chat view now reactively handles deep-link parameters for scrolling to specific messages.
 - **Mention Notification Styling:** Centralized mention/tag parsing into `mentionUtils.tsx` utility. Updated `ChatNotificationToast` and Layout notification dropdown to render styled `@mentions` and `#ISSUE` tags identically to live chat.
 - **Issue Click in Chat:** Tagged issues (`#PROJ-1`) in chat now open a modal instead of navigating to the agile board, keeping users on the chat screen.
-- **DM Mention Restrictions:** `ChatInput` accepts an `isDirect` flag; when in DM mode, the `@` mention suggestion list only shows the current user.
-- **Global Unread Count:** Refactored unread message counting to a global state independent of active project. Persistent unread counter on "Team Chat" sidebar nav item. Removed redundant pulsing indicators from project dashboard cards.
-- **Chat History Sync Fix:** Aligned `ChatSearch` and file/message loading with the `activeChannel` state (project vs. DM) to prevent orphaned or irrelevant records.
-- **Modal Z-Index Fix:** Adjusted top nav bar z-index in `Layout.tsx` to sit behind modal windows.
-- **Week 7 Tutorial:** Created `tutorials/week7_tutorial.md` covering Spring Data JPA repositories.
-- **Week 8 & 9 Tutorial:** Created `tutorials/week8_9_tutorial.md` covering AI Summarization (Gemini API) and PDF Reporting (OpenPDF).
+- **AI Report Stabilization:** Resolved critical "Unable to access lob stream" (HTTP 500) and bean creation errors. Implemented snapshot-based data persistence for historical project reports, ensuring they remain static even as project data changes. Fixed PostgreSQL compatibility issues with column types (`TEXT` vs `LONGTEXT`).
+- **Historical Report Integrity:** Enhanced `ReportService` to persist assignee metadata in snapshots and updated the frontend to prioritize these snapshots for rendering stats cards and issue lists in past reports.
 
 ## Next Steps
 - Implement **Week 10: Testing** — JUnit backend tests, Code Freeze.

@@ -76,6 +76,9 @@ public class Issue {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+    
+    @Column(columnDefinition = "TEXT")
+    private String aiAssignmentReason;
 
     @PrePersist
     protected void onCreate() {

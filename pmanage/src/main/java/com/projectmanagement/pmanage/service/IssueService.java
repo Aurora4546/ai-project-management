@@ -125,6 +125,10 @@ public class IssueService {
             issue.setPosition(request.getPosition());
         }
 
+        if (request.getAiAssignmentReason() != null) {
+            issue.setAiAssignmentReason(request.getAiAssignmentReason());
+        }
+
 
         if (request.getAssigneeId() != null) {
             User assignee = userRepository.findById(request.getAssigneeId())
@@ -219,6 +223,7 @@ public class IssueService {
         response.setCreatedAt(issue.getCreatedAt());
         response.setUpdatedAt(issue.getUpdatedAt());
         response.setPosition(issue.getPosition());
+        response.setAiAssignmentReason(issue.getAiAssignmentReason());
         return response;
 
     }

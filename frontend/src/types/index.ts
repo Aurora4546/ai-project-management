@@ -75,8 +75,14 @@ export interface IIssue {
   createdAt: string
   updatedAt: string
   position: number
+  aiAssignmentReason?: string
 }
 
+
+export interface IAiAssignmentResponse {
+  assigneeId: string | number
+  reason: string
+}
 
 export interface IComment {
   id: string
@@ -219,4 +225,8 @@ export interface IReport {
   totalMessages: number
   overdueIssues: number
   unassignedIssues: number
+
+  // Snapshot data for historical viewing
+  issueSnapshots?: IIssue[]
+  messageSnapshots?: IChatMessage[]
 }

@@ -36,6 +36,9 @@ public class User implements UserDetails {
 
     private java.time.LocalDateTime lastSeenAt;
 
+    @Column(columnDefinition = "TEXT")
+    private String skills;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));

@@ -36,6 +36,7 @@ public class IssueRequest {
     private LocalDate endDate;
     private List<String> labels;
     private Double position;
+    private String aiAssignmentReason;
 
     // Getters and Setters
     public Double getPosition() { return position; }
@@ -65,4 +66,6 @@ public class IssueRequest {
     public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
     public List<String> getLabels() { return labels; }
     public void setLabels(List<String> labels) { this.labels = labels; }
+    public String getAiAssignmentReason() { return aiAssignmentReason; }
+    public void setAiAssignmentReason(String aiAssignmentReason) { this.aiAssignmentReason = aiAssignmentReason; }
 }

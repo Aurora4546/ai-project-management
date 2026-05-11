@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import * as api from '../services/api'
-import type { IIssue, IChatMessage, IProjectMember, ILabel } from '../types'
+import type { IIssue, IChatMessage, IReport } from '../types'
 import { getIssueTheme, getAvatarColor } from '../utils'
 import { ChatMessage } from './chat/ChatMessage'
 
@@ -8,42 +8,63 @@ interface ReportDetailsModalProps {
     isOpen: boolean
     onClose: () => void
     projectId: string
+    report: IReport | null
     reportType: 'total' | 'completed' | 'open' | 'overdue' | 'unassigned' | 'messages' | null
 }
 
-export const ReportDetailsModal = ({ isOpen, onClose, projectId, reportType }: ReportDetailsModalProps): React.ReactElement | null => {
+export const ReportDetailsModal = ({ isOpen, onClose, projectId, report, reportType }: ReportDetailsModalProps): React.ReactElement | null => {
     const [issues, setIssues] = useState<IIssue[]>([])
     const [messages, setMessages] = useState<IChatMessage[]>([])
     const [isLoading, setIsLoading] = useState(false)
+    const [isHistorical, setIsHistorical] = useState(false)
 
     useEffect(() => {
-        if (!isOpen || !projectId || !reportType) return
+        if (!isOpen || !report || !reportType) return
 
         const fetchData = async () => {
             setIsLoading(true)
             try {
                 if (reportType === 'messages') {
-                    // Fetch recent messages
-                    const msgs = await api.fetchChatMessages(projectId, 0, 100)
-                    setMessages(msgs)
+                    // Use snapshot if available, otherwise fetch (for legacy/current reports)
+                    if (report.messageSnapshots && Array.isArray(report.messageSnapshots)) {
+                        setMessages(report.messageSnapshots)
+                        setIsHistorical(true)
+                    } else if (projectId) {
+                        const msgs = await api.fetchChatMessages(projectId, 0, 100)
+                        setMessages(msgs)
+                        setIsHistorical(false)
+                    }
                 } else {
-                    // Fetch all issues and filter
-                    const allIssues = await api.fetchProjectIssues(projectId)
-                    let filtered = allIssues
+                    let sourceIssues: IIssue[] = []
+                    let snapshotsUsed = false
+                    if (report.issueSnapshots && Array.isArray(report.issueSnapshots)) {
+                        sourceIssues = report.issueSnapshots
+                        snapshotsUsed = true
+                    } else if (projectId) {
+                        // Fallback to live data only if no snapshots exist (legacy reports)
+                        sourceIssues = await api.fetchProjectIssues(projectId)
+                    }
+
+                    setIsHistorical(snapshotsUsed)
+
+                    let filtered = sourceIssues
                     if (reportType === 'completed') {
-                        filtered = allIssues.filter(i => i.status === 'DONE')
+                        filtered = sourceIssues.filter(i => i.status === 'DONE')
                     } else if (reportType === 'open') {
-                        filtered = allIssues.filter(i => i.status !== 'DONE')
+                        filtered = sourceIssues.filter(i => i.status !== 'DONE')
                     } else if (reportType === 'overdue') {
-                        const now = new Date()
-                        now.setHours(0,0,0,0)
-                        filtered = allIssues.filter(i => {
+                        // For overdue, we use the date relative to when the report was generated
+                        const generatedDate = new Date(report.generatedAt)
+                        generatedDate.setHours(0,0,0,0)
+                        filtered = sourceIssues.filter(i => {
                             if (!i.endDate) return false
                             const endDate = new Date(i.endDate)
-                            return endDate < now && i.status !== 'DONE'
+                            // If we have snapshots, we use the status from the snapshot
+                            // If we are using live data, this will be inaccurate for past reports (as user noted)
+                            return endDate < generatedDate && i.status !== 'DONE'
                         })
                     } else if (reportType === 'unassigned') {
-                        filtered = allIssues.filter(i => !i.assigneeId || i.assigneeId === 'unassigned')
+                        filtered = sourceIssues.filter(i => !i.assigneeId || i.assigneeId === 'unassigned' || i.assigneeId === 0)
                     }
                     setIssues(filtered)
                 }
@@ -55,7 +76,7 @@ export const ReportDetailsModal = ({ isOpen, onClose, projectId, reportType }: R
         }
 
         fetchData()
-    }, [isOpen, projectId, reportType])
+    }, [isOpen, projectId, report, reportType])
 
     if (!isOpen) return null
 
@@ -153,11 +174,15 @@ export const ReportDetailsModal = ({ isOpen, onClose, projectId, reportType }: R
                             </span>
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-slate-800 tracking-tight">{getTitle()}</h2>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-xl font-bold text-slate-800 tracking-tight">{getTitle()}</h2>
+
+                            </div>
                             <p className="text-[12px] text-slate-500 font-medium">
                                 {reportType === 'messages' 
                                  ? `${messages.length} recent messages` 
                                  : `${issues.length} matching issues`}
+                                {!isHistorical && <span className="text-amber-500 ml-1">(Live Data)</span>}
                             </p>
                         </div>
                     </div>

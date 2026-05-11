@@ -3,6 +3,7 @@ package com.projectmanagement.pmanage.controller;
 import com.projectmanagement.pmanage.dto.*;
 import com.projectmanagement.pmanage.model.User;
 import com.projectmanagement.pmanage.service.IssueService;
+import com.projectmanagement.pmanage.service.AiAssignmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,12 +20,19 @@ import java.util.UUID;
 public class IssueController {
 
     private final IssueService issueService;
+    private final AiAssignmentService aiAssignmentService;
 
     @PostMapping
     public ResponseEntity<IssueResponse> createIssue(
             @Valid @RequestBody IssueRequest request,
             @AuthenticationPrincipal User currentUser) {
         return new ResponseEntity<>(issueService.createIssue(request, currentUser), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/ai-assign")
+    public ResponseEntity<AiAssignmentResponse> aiAssign(
+            @Valid @RequestBody AiAssignmentRequest request) {
+        return ResponseEntity.ok(aiAssignmentService.suggestAssignee(request));
     }
 
     @PutMapping("/{id}")
