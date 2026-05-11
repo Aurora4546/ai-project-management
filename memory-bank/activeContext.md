@@ -15,6 +15,7 @@
 - **Issue Click in Chat:** Tagged issues (`#PROJ-1`) in chat now open a modal instead of navigating to the agile board, keeping users on the chat screen.
 - **AI Report Stabilization:** Resolved critical "Unable to access lob stream" (HTTP 500) and bean creation errors. Implemented snapshot-based data persistence for historical project reports, ensuring they remain static even as project data changes. Fixed PostgreSQL compatibility issues with column types (`TEXT` vs `LONGTEXT`).
 - **Historical Report Integrity:** Enhanced `ReportService` to persist assignee metadata in snapshots and updated the frontend to prioritize these snapshots for rendering stats cards and issue lists in past reports.
+- **AI Report Delete Confirmation:** Integrated `DeleteConfirmModal` into the `Reports.tsx` page. Refactored the deletion flow to require user confirmation before calling the delete API, improving UX and preventing accidental data loss.
 
 ## Next Steps
 - Implement **Week 10: Testing** — JUnit backend tests, Code Freeze.

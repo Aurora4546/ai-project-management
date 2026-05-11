@@ -5,6 +5,7 @@ import { Layout } from '../components/Layout'
 import { generateProjectReport, downloadProjectReportPdf, getReportHistory, deleteReport as deleteReportApi, getReportById } from '../services/api'
 import type { IReport } from '../types'
 import { ReportDetailsModal } from '../components/ReportDetailsModal'
+import { DeleteConfirmModal } from '../components/DeleteConfirmModal'
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, Legend
@@ -89,6 +90,7 @@ export const Reports = (): React.ReactElement => {
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'total' | 'completed' | 'open' | 'overdue' | 'unassigned' | 'messages' | null>(null)
+  const [reportToDelete, setReportToDelete] = useState<IReport | null>(null)
 
   // Load report history on mount
   useEffect(() => {
@@ -168,19 +170,30 @@ export const Reports = (): React.ReactElement => {
     }
   }
 
-  const handleDeleteReport = async (reportId: string, e: React.MouseEvent) => {
+  const handleDeleteReport = (selectedReport: IReport, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!projectId) return
+    setReportToDelete(selectedReport)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!projectId || !reportToDelete?.id) return
+
     try {
-      await deleteReportApi(projectId, reportId)
+      await deleteReportApi(projectId, reportToDelete.id)
       showToast("Report deleted successfully!", "success")
-      setReportHistory(prev => prev.filter(r => r.id !== reportId))
-      if (report?.id === reportId) {
-        const remaining = reportHistory.filter(r => r.id !== reportId)
+      
+      const deletedId = reportToDelete.id
+      setReportHistory(prev => prev.filter(r => r.id !== deletedId))
+      
+      if (report?.id === deletedId) {
+        const remaining = reportHistory.filter(r => r.id !== deletedId)
         setReport(remaining.length > 0 ? remaining[0] : null)
       }
     } catch (err) {
       console.error('Failed to delete report:', err)
+      showToast("Failed to delete report", "error")
+    } finally {
+      setReportToDelete(null)
     }
   }
 
@@ -306,7 +319,7 @@ export const Reports = (): React.ReactElement => {
                         </div>
                       </div>
                       <button
-                        onClick={(e) => handleDeleteReport(r.id, e)}
+                        onClick={(e) => handleDeleteReport(r, e)}
                         className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-50 rounded-lg"
                         title="Delete report"
                       >
@@ -730,6 +743,12 @@ export const Reports = (): React.ReactElement => {
         projectId={projectId!}
         report={report}
         reportType={modalType}
+      />
+      <DeleteConfirmModal
+        isOpen={!!reportToDelete}
+        onClose={() => setReportToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        itemName={reportToDelete ? `Report from ${formatDate(reportToDelete.generatedAt)}` : ''}
       />
     </Layout>
   )

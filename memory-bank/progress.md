@@ -31,6 +31,7 @@
 - **Report UI:** Robust frontend rendering of AI reports with `NarrativeCard` and contextual stat modal icons.
 - **Form Validation:** Enforced character limits for issue titles (max 50) and descriptions (max 500) with intuitive visual feedback.
 - **Reporting Stability:** Resolved 500 errors and LOB stream issues; implemented data snapshots to preserve historical report integrity.
+- **AI Report Delete Confirmation:** Integrated confirmation modal for report deletion.
 
 ## What's Left to Build (10-Week Roadmap)
 - [x] **Week 1:** Foundation (Spring Boot, React, Postgres setup, MVC skeleton)
