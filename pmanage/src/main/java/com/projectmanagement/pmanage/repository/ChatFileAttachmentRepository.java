@@ -31,4 +31,12 @@ public interface ChatFileAttachmentRepository extends JpaRepository<ChatFileAtta
            "AND LOWER(a.fileName) LIKE LOWER(CONCAT('%', :query, '%')) " +
            "ORDER BY a.createdAt DESC")
     List<ChatFileAttachment> searchDirectFiles(UUID projectId, Long user1Id, Long user2Id, String query);
+
+    /**
+     * Bulk-deletes all chat file attachments for a project.
+     * Must be called before deleting the chat messages.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM ChatFileAttachment a WHERE a.chatMessage.id IN (SELECT m.id FROM ChatMessage m WHERE m.project.id = :projectId)")
+    void deleteAllByProjectId(@Param("projectId") UUID projectId);
 }

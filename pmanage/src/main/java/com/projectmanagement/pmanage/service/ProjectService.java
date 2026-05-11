@@ -8,6 +8,7 @@ import com.projectmanagement.pmanage.model.Project;
 import com.projectmanagement.pmanage.model.ProjectMember;
 import com.projectmanagement.pmanage.model.ProjectRole;
 import com.projectmanagement.pmanage.model.User;
+import com.projectmanagement.pmanage.repository.ChatFileAttachmentRepository;
 import com.projectmanagement.pmanage.repository.ChatMessageRepository;
 import com.projectmanagement.pmanage.repository.ChatReadReceiptRepository;
 import com.projectmanagement.pmanage.repository.ChatReadStatusRepository;
@@ -28,6 +29,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final ChatFileAttachmentRepository chatFileAttachmentRepository;
     private final ChatReadReceiptRepository chatReadReceiptRepository;
     private final ChatReadStatusRepository chatReadStatusRepository;
     private final ProjectReportRepository projectReportRepository;
@@ -37,6 +39,7 @@ public class ProjectService {
             ProjectRepository projectRepository,
             UserRepository userRepository,
             ChatMessageRepository chatMessageRepository,
+            ChatFileAttachmentRepository chatFileAttachmentRepository,
             ChatReadReceiptRepository chatReadReceiptRepository,
             ChatReadStatusRepository chatReadStatusRepository,
             ProjectReportRepository projectReportRepository,
@@ -44,6 +47,7 @@ public class ProjectService {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.chatMessageRepository = chatMessageRepository;
+        this.chatFileAttachmentRepository = chatFileAttachmentRepository;
         this.chatReadReceiptRepository = chatReadReceiptRepository;
         this.chatReadStatusRepository = chatReadStatusRepository;
         this.projectReportRepository = projectReportRepository;
@@ -203,16 +207,19 @@ public class ProjectService {
         // 2. Read status tracks per-project read positions (raw UUID column, no FK)
         chatReadStatusRepository.deleteByProjectId(projectId);
 
-        // 3. Chat messages (attachments cascade via CascadeType.ALL on ChatMessage)
+        // 3. Chat messages attachments (bulk delete doesn't cascade, so must do manually)
+        chatFileAttachmentRepository.deleteAllByProjectId(projectId);
+
+        // 4. Chat messages
         chatMessageRepository.deleteAllByProjectId(projectId);
 
-        // 4. AI-generated project reports
+        // 5. AI-generated project reports
         projectReportRepository.deleteAllByProjectId(projectId);
 
-        // 5. Project labels
+        // 6. Project labels
         labelRepository.deleteAllByProjectId(projectId);
 
-        // 6. Finally delete the project itself
+        // 7. Finally delete the project itself
         //    Issues and ProjectMembers cascade via CascadeType.ALL on Project entity
         projectRepository.delete(project);
     }
