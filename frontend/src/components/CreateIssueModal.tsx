@@ -168,6 +168,7 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
 
     useEffect(() => {
         if (isOpen && projectId) {
+            resetForm();
             loadProjectData();
         }
     }, [isOpen, projectId]);
@@ -200,6 +201,21 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
         }
     };
 
+    const resetForm = () => {
+        setTitle('');
+        setDescription('');
+        setLabels([]);
+        setAssigneeId('unassigned');
+        setEpicId('none');
+        setParentId(null);
+        setStartDate('');
+        setEndDate('');
+        setAiReasoning(null);
+        setShowAiReasoning(true);
+        setIssueType('task');
+        setStatus('todo');
+        setPriority('medium');
+    };
 
     const handleCreate = async () => {
         if (!title.trim()) return;
@@ -233,15 +249,7 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
             await api.createIssue(request);
             showToast("Issue created successfully!", "success")
             onClose();
-            // Reset form
-            setTitle('');
-            setDescription('');
-            setLabels([]);
-            setAssigneeId('unassigned');
-            setEpicId('none');
-            setParentId(null);
-            setStartDate('');
-            setEndDate('');
+            resetForm();
         } catch (error) {
             console.error('Failed to create issue:', error);
         } finally {
@@ -439,9 +447,9 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                     </div>
 
                     {aiReasoning && showAiReasoning && (
-                        <div className="p-4 bg-purple-50/80 border border-purple-100 rounded-xl text-[13px] text-purple-700 flex gap-4 relative animate-in fade-in slide-in-from-top-1 duration-300 shadow-sm max-w-xl mx-auto w-full group overflow-hidden">
+                        <div className="p-4 bg-purple-50/80 border border-purple-100 rounded-xl text-[13px] text-purple-700 flex gap-4 relative animate-in fade-in slide-in-from-top-1 duration-300 shadow-sm max-w-2xl mx-auto w-full group">
                             <span className="material-symbols-outlined text-[18px] shrink-0 text-purple-500">auto_awesome</span>
-                            <div className="pr-8 leading-relaxed">
+                            <div className="pr-8 leading-relaxed min-w-0 whitespace-pre-wrap break-words text-left">
                                 <span className="font-bold">AI Insight:</span> {aiReasoning}
                             </div>
                             <button 

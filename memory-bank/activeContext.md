@@ -8,8 +8,8 @@
 ## Recent Changes (from conversation history)
 - **AI Reporting Enhancements:** Expanded the Gemini API integration to generate 8 comprehensive narrative sections (Executive Summary, Accomplishments, Blockers, Next Steps, Team Dynamics, Sprint Health, Risk Assessment, and Velocity Analysis). Improved frontend rendering with `NarrativeCard` and contextual icons in `ReportDetailsModal`.
 - **Issue Validation Feedback:** Enforced character limits for issue titles (max 50) and descriptions (max 500) with intuitive visual feedback in create/update modals.
-- **Chat Styling Standardization:** Applied global `font-inter` to the chat feature typography for consistency.
-- **Week 8 & 9 Tutorial:** Created `tutorials/week8_9_tutorial.md` covering AI Summarization (Gemini API) and PDF Reporting (OpenPDF).
+- **Chat Styling & Layout Refinements:** Applied global `font-inter` to the chat feature. Resolved AI response text cropping issues in modals by implementing flex-box constraints and scrollable containers. Cleaned up the AI Reports UI by removing redundant header boxes and standardizing generation timestamps.
+- **Week 8 & 9 Tutorial:** Created `tutorials/week8_9_tutorial.md` covering AI Summarization (Gemini API), PDF Reporting (OpenPDF), and Input Validation refinements.
 - **Chat Notification Navigation:** Fixed notification navigation to pass `messageId` and `isDirect` context to toasts and dropdowns. Chat view now reactively handles deep-link parameters for scrolling to specific messages.
 - **Mention Notification Styling:** Centralized mention/tag parsing into `mentionUtils.tsx` utility. Updated `ChatNotificationToast` and Layout notification dropdown to render styled `@mentions` and `#ISSUE` tags identically to live chat.
 - **Issue Click in Chat:** Tagged issues (`#PROJ-1`) in chat now open a modal instead of navigating to the agile board, keeping users on the chat screen.

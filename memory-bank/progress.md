@@ -41,7 +41,7 @@
 - [x] **Week 6:** Agile Boards (React drag-and-drop, status updates)
 - [x] **Week 7:** Sync Chat (WebSockets, DMs, mentions, notifications, file sharing)
 - [x] **Week 8:** Reporting (OpenPDF endpoints)
-- [x] **Week 9:** AI Summarization (Gemini API integration)
+- [x] **Week 9:** AI Summarization (Gemini API integration, technical documentation complete)
 - [ ] **Week 10:** Testing (JUnit backend tests, Code Freeze)
 
 ## Known Issues

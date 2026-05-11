@@ -642,9 +642,9 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                         </div>
 
                         {aiReasoning && showAiReasoning && (
-                            <div className="p-4 bg-purple-50/80 border border-purple-100 rounded-xl text-[13px] text-purple-700 flex gap-4 relative animate-in fade-in slide-in-from-top-1 duration-300 shadow-sm max-w-xl mx-auto w-full group overflow-hidden">
+                            <div className="p-4 bg-purple-50/80 border border-purple-100 rounded-xl text-[13px] text-purple-700 flex gap-4 relative animate-in fade-in slide-in-from-top-1 duration-300 shadow-sm max-w-2xl mx-auto w-full group">
                                 <span className="material-symbols-outlined text-[18px] shrink-0 text-purple-500">auto_awesome</span>
-                                <div className="pr-8 leading-relaxed text-left">
+                                <div className="pr-8 leading-relaxed text-left min-w-0 whitespace-pre-wrap break-words">
                                     <span className="font-bold">AI Insight:</span> {aiReasoning}
                                 </div>
                                 <button 
