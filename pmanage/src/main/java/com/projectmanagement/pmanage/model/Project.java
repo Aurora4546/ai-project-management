@@ -19,7 +19,7 @@ public class Project extends BaseEntity {
     @Column(nullable = false, length = 4, unique = true)
     private String projectKey;
 
-    @Column(length = 500)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column
