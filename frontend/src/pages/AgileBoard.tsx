@@ -110,7 +110,7 @@ export const AgileBoard = (): React.ReactElement => {
 
         // Remove existing guards and implement reordering
         const sameDroppable = destination.droppableId === source.droppableId;
-        
+
         // Find target group and status
         const parts = destination.droppableId.split('||');
         let targetGroupValue: string | null = null;
@@ -164,12 +164,12 @@ export const AgileBoard = (): React.ReactElement => {
             const issueIndex = nextIssues.findIndex(i => i.id.toString() === draggableId);
             if (issueIndex > -1) {
                 const [issue] = nextIssues.splice(issueIndex, 1);
-                const updatedIssue = { 
-                    ...issue, 
-                    status: targetStatus, 
-                    position: newPosition 
+                const updatedIssue = {
+                    ...issue,
+                    status: targetStatus,
+                    position: newPosition
                 };
-                
+
                 if (targetGroupValue && groupBy === 'ASSIGNEE') {
                     updatedIssue.assigneeName = targetGroupValue === 'Unassigned' ? '' : targetGroupValue;
                     const someMatched = prev.find(i => i.assigneeName === targetGroupValue && i.assigneeId);
@@ -177,7 +177,7 @@ export const AgileBoard = (): React.ReactElement => {
                 } else if (targetGroupValue && groupBy === 'EPIC') {
                     updatedIssue.epicKey = targetGroupValue === 'No Epic' ? '' : targetGroupValue;
                 }
-                
+
                 nextIssues.push(updatedIssue);
                 // Sort the whole list by position to maintain internal consistency
                 return nextIssues.sort((a, b) => a.position - b.position);
@@ -298,7 +298,7 @@ export const AgileBoard = (): React.ReactElement => {
         return (
             <Draggable draggableId={issue.id.toString()} index={index} key={issue.id.toString()}>
                 {(provided: any, snapshot: any) => (
-                    <div 
+                    <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
@@ -306,146 +306,148 @@ export const AgileBoard = (): React.ReactElement => {
                         className={`bg-white p-4 rounded-lg shadow-sm border transition-all cursor-pointer group ${snapshot.isDragging ? 'border-blue-400 shadow-md ring-1 ring-blue-400 opacity-[0.95]' : 'border-slate-200/80 hover:shadow-md hover:border-slate-300'}`}
                         style={{ ...provided.draggableProps.style }}
                     >
-                {/* Row 1: Issue ID + Epic Tag + Actions */}
-                <div className="flex items-center justify-between mb-1.5 relative">
-                    <div className="flex items-center gap-2">
-                        <span className={`material-symbols-outlined text-[16px] ${color}`}>{icon}</span>
-                        <span className="text-[12px] font-bold text-slate-700 tracking-tight">{issue.issueKey}</span>
-                        {issue.epicKey && (
-                            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-wide inline-flex items-center gap-1 text-purple-600 bg-purple-50">
-                                {issue.epicKey}
-                            </span>
-                        )}
-                    </div>
-                    
-                    {/* Three Dot Menu */}
-                    <div className="relative" ref={activeDropdownId === issue.id.toString() ? issueOptionsRef : null}>
-                        <button 
-                            className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                            onClick={(e) => { e.stopPropagation(); setActiveDropdownId(activeDropdownId === issue.id.toString() ? null : issue.id.toString()); }}
-                        >
-                            <span className="material-symbols-outlined text-[18px]">more_horiz</span>
-                        </button>
-                        
-                        {activeDropdownId === issue.id.toString() && (
-                            <div className="absolute top-full right-0 mt-1 w-36 bg-white border border-slate-200 rounded-lg shadow-xl py-1.5 z-50 animate-in fade-in zoom-in duration-150 origin-top-right">
+                        {/* Row 1: Issue ID + Epic Tag + Actions */}
+                        <div className="flex items-center justify-between mb-1.5 relative">
+                            <div className="flex items-center gap-2">
+                                <span className={`material-symbols-outlined text-[16px] ${color}`}>{icon}</span>
+                                <span className="text-[12px] font-bold text-slate-700 tracking-tight">{issue.issueKey}</span>
+                                {issue.epicKey && (
+                                    <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-wide inline-flex items-center gap-1 text-purple-600 bg-purple-50">
+                                        {issue.epicKey}
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Three Dot Menu */}
+                            <div className="relative" ref={activeDropdownId === issue.id.toString() ? issueOptionsRef : null}>
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); setActiveDropdownId(null); handleTaskClick(issue); }}
-                                    className="w-full text-left px-3 py-1.5 text-[13px] text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors"
+                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                                    onClick={(e) => { e.stopPropagation(); setActiveDropdownId(activeDropdownId === issue.id.toString() ? null : issue.id.toString()); }}
                                 >
-                                    <span className="material-symbols-outlined text-[16px]">edit</span>
-                                    Edit Issue
+                                    <span className="material-symbols-outlined text-[18px]">more_horiz</span>
                                 </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setActiveDropdownId(null); setIssueToDelete(issue); }}
-                                    className="w-full text-left px-3 py-1.5 text-[13px] text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">delete</span>
-                                    Delete
-                                </button>
+
+                                {activeDropdownId === issue.id.toString() && (
+                                    <div className="absolute top-full right-0 mt-1 w-36 bg-white border border-slate-200 rounded-lg shadow-xl py-1.5 z-50 animate-in fade-in zoom-in duration-150 origin-top-right">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setActiveDropdownId(null); handleTaskClick(issue); }}
+                                            className="w-full text-left px-3 py-1.5 text-[13px] text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-[16px]">edit</span>
+                                            Edit Issue
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setActiveDropdownId(null); setIssueToDelete(issue); }}
+                                            className="w-full text-left px-3 py-1.5 text-[13px] text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                                            Delete
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Row 2: Labels */}
+                        {issue.labels && issue.labels.length > 0 && (
+                            <div className="flex gap-1 flex-wrap mb-2">
+                                {issue.labels.map(label => {
+                                    const labelObj = projectLabels.find(l => l.name === label)
+                                    const color = labelObj?.color || '#3b82f6'
+                                    const r = parseInt(color.slice(1, 3), 16), g = parseInt(color.slice(3, 5), 16), b = parseInt(color.slice(5, 7), 16)
+                                    return (
+                                        <span
+                                            key={label}
+                                            className="text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-wide inline-flex items-center gap-1"
+                                            style={{
+                                                backgroundColor: `rgba(${r},${g},${b},0.1)`,
+                                                color: color,
+                                            }}
+                                        >
+                                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+                                            {label}
+                                        </span>
+                                    )
+                                })}
                             </div>
                         )}
-                    </div>
-                </div>
 
-                {/* Row 2: Labels */}
-                {issue.labels && issue.labels.length > 0 && (
-                    <div className="flex gap-1 flex-wrap mb-2">
-                        {issue.labels.map(label => {
-                            const labelObj = projectLabels.find(l => l.name === label)
-                            const color = labelObj?.color || '#3b82f6'
-                            const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16)
-                            return (
-                                <span
-                                    key={label}
-                                    className="text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-wide inline-flex items-center gap-1"
-                                    style={{
-                                        backgroundColor: `rgba(${r},${g},${b},0.1)`,
-                                        color: color,
-                                    }}
-                                >
-                                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
-                                    {label}
-                                </span>
-                            )
-                        })}
-                    </div>
-                )}
-                
-                {/* Row 3: Title */}
-                <h4 className="text-[13px] font-semibold text-slate-800 leading-snug mb-5 group-hover:text-blue-600 transition-colors pr-4">
-                    {issue.title}
-                </h4>
+                        {/* Row 3: Title */}
+                        <h4 className="text-[13px] font-semibold text-slate-800 leading-snug mb-5 group-hover:text-blue-600 transition-colors pr-4">
+                            {issue.title}
+                        </h4>
 
-                
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3 text-slate-400">
-                        <div className="flex items-center gap-1.5 text-[11px] font-medium">
-                            <span className="material-symbols-outlined text-[14px]">calendar_today</span>
-                            {issue.endDate || 'No date'}
+
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3 text-slate-400">
+                                <div className="flex items-center gap-1.5 text-[11px] font-medium">
+                                    <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                                    {issue.endDate || 'No date'}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                {issue.priority && (
+                                    <span
+                                        className={`material-symbols-outlined text-[18px] ${getPriorityIcon(issue.priority).color}`}
+                                        title={getPriorityIcon(issue.priority).title}
+                                    >
+                                        {getPriorityIcon(issue.priority).icon}
+                                    </span>
+                                )}
+                                {issue.assigneeName ? (
+                                    <div
+                                        className="w-6 h-6 rounded-full text-white flex items-center justify-center text-[10px] font-bold shadow-sm border border-black/5"
+                                        style={{ backgroundColor: issue.assigneeEmail ? getAvatarColor(issue.assigneeEmail) : '#f97316' }}
+                                        title={issue.assigneeName}
+                                    >
+                                        {issue.assigneeName.charAt(0).toUpperCase()}
+                                    </div>
+                                ) : (
+                                    <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-[9px] font-bold shadow-sm border border-black/5" title="Unassigned">
+                                        ?
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2">
-                        {issue.priority && (
-                            <span 
-                                className={`material-symbols-outlined text-[18px] ${getPriorityIcon(issue.priority).color}`}
-                                title={getPriorityIcon(issue.priority).title}
-                            >
-                                {getPriorityIcon(issue.priority).icon}
-                            </span>
-                        )}
-                        {issue.assigneeName ? (
-                            <div 
-                                className="w-6 h-6 rounded-full text-white flex items-center justify-center text-[10px] font-bold shadow-sm border border-black/5"
-                                style={{ backgroundColor: issue.assigneeEmail ? getAvatarColor(issue.assigneeEmail) : '#f97316' }}
-                                title={issue.assigneeName}
-                            >
-                                {issue.assigneeName.charAt(0).toUpperCase()}
-                            </div>
-                        ) : (
-                            <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-[9px] font-bold shadow-sm border border-black/5" title="Unassigned">
-                                ?
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-            )}
-        </Draggable>
+                )}
+            </Draggable>
         );
     };
 
     const renderBoardContent = () => {
         if (groupBy === 'NONE') {
             return (
-            <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 items-start flex-1 min-h-0 snap-x snap-mandatory md:snap-none">
-                {columns.map(col => {
-                    const colIssues = filteredIssues.filter(i => i.status === col.status.toUpperCase());
-                    return (
-                        <Droppable key={col.id} droppableId={col.status}>
-                            {(provided: any, snapshot: any) => (
-                                <div 
-                                    ref={provided.innerRef}
-                                    {...provided.droppableProps}
-                                    className={`flex-none w-[85vw] md:w-[310px] flex flex-col rounded-[10px] p-3 border transition-colors snap-center md:snap-align-none ${snapshot.isDraggingOver ? 'bg-blue-50/50 border-blue-300 ring-2 ring-blue-300 ring-inset' : 'bg-[#f1f5f9] border-slate-100'}`}
-                                >
-                                    <div className="flex justify-between items-center mb-4 px-1 mt-1 pb-2 border-b border-slate-200/50">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-[11px] text-slate-500 tracking-widest uppercase">{col.title}</h3>
-                                            <span className="bg-slate-200/80 text-slate-400 text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">{colIssues.length}</span>
+                <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 items-start flex-1 min-h-0 md:snap-none">
+                    {columns.map(col => {
+                        const colIssues = filteredIssues.filter(i => i.status === col.status.toUpperCase());
+                        return (
+                            <Droppable key={col.id} droppableId={col.status}>
+                                {(provided: any, snapshot: any) => (
+                                    <div
+                                        className={`flex-none w-[85vw] md:w-[310px] flex flex-col rounded-[10px] p-3 border transition-colors snap-center md:snap-align-none ${snapshot.isDraggingOver ? 'bg-blue-50/50 border-blue-300 ring-2 ring-blue-300 ring-inset' : 'bg-[#f1f5f9] border-slate-100'}`}
+                                    >
+                                        <div className="flex justify-between items-center mb-4 px-1 mt-1 pb-2 border-b border-slate-200/50">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-bold text-[11px] text-slate-500 tracking-widest uppercase">{col.title}</h3>
+                                                <span className="bg-slate-200/80 text-slate-400 text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">{colIssues.length}</span>
+                                            </div>
+                                        </div>
+                                        <div 
+                                            ref={provided.innerRef}
+                                            {...provided.droppableProps}
+                                            className="flex flex-col gap-3 min-h-[150px]"
+                                        >
+                                            {colIssues.map((issue, index) => renderIssueCard(issue, index))}
+                                            {provided.placeholder}
                                         </div>
                                     </div>
-                                    <div className="flex flex-col gap-3 min-h-[50px]">
-                                        {colIssues.map((issue, index) => renderIssueCard(issue, index))}
-                                        {provided.placeholder}
-                                    </div>
-                                </div>
-                            )}
-                        </Droppable>
-                    );
-                })}
-            </div>
+                                )}
+                            </Droppable>
+                        );
+                    })}
+                </div>
             );
         }
 
@@ -466,13 +468,13 @@ export const AgileBoard = (): React.ReactElement => {
                         if (groupBy === 'ASSIGNEE') return (i.assigneeName || 'Unassigned') === groupName;
                         return (i.epicKey || 'No Epic') === groupName;
                     });
-                    
+
                     if (groupIssues.length === 0) return null;
 
                     // Extract avatar color logic for assignee grouping visual
                     const sampleIssue = groupIssues[0];
-                    const avatarColor = groupBy === 'ASSIGNEE' && groupName !== 'Unassigned' && sampleIssue.assigneeEmail 
-                        ? getAvatarColor(sampleIssue.assigneeEmail) 
+                    const avatarColor = groupBy === 'ASSIGNEE' && groupName !== 'Unassigned' && sampleIssue.assigneeEmail
+                        ? getAvatarColor(sampleIssue.assigneeEmail)
                         : '#94a3b8';
 
                     return (
@@ -480,7 +482,7 @@ export const AgileBoard = (): React.ReactElement => {
                             <div className="px-5 py-3 bg-slate-50/50 border-b border-slate-100 flex items-center gap-3">
                                 {groupBy === 'ASSIGNEE' ? (
                                     <div className="flex items-center gap-3">
-                                        <div 
+                                        <div
                                             className="w-7 h-7 rounded-full text-white flex items-center justify-center text-[11px] font-bold shadow-sm"
                                             style={{ backgroundColor: avatarColor }}
                                         >
@@ -497,34 +499,34 @@ export const AgileBoard = (): React.ReactElement => {
                                     </div>
                                 )}
                             </div>
-                            
-                            <div className="flex gap-4 p-4 overflow-x-auto snap-x snap-mandatory md:snap-none items-start">
+
+                            <div className="flex gap-4 p-4 overflow-x-auto md:snap-none items-start">
                                 {columns
                                     .filter(col => groupIssues.some(i => i.status === col.status.toUpperCase()))
                                     .map(col => {
-                                    const colIssues = groupIssues.filter(i => i.status === col.status.toUpperCase());
-                                    const dragId = `${groupName}||${col.status}`;
-                                    return (
-                                        <Droppable key={dragId} droppableId={dragId}>
-                                            {(provided: any, snapshot: any) => (
-                                                <div 
-                                                    ref={provided.innerRef}
-                                                    {...provided.droppableProps}
-                                                    className={`flex-none w-[85vw] md:w-[310px] flex flex-col rounded-lg p-3 border transition-colors snap-center md:snap-align-none ${snapshot.isDraggingOver ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-300 ring-inset' : 'bg-[#f8fafc] border-slate-200/50'}`}
-                                                >
-                                                    <div className="flex justify-between items-center mb-3 px-1 pb-2 border-b border-slate-200/50">
-                                                        <h3 className="font-bold text-[10px] text-slate-500 tracking-widest uppercase">{col.title}</h3>
-                                                        <span className="text-slate-400 text-[10px] font-bold">{colIssues.length}</span>
+                                        const colIssues = groupIssues.filter(i => i.status === col.status.toUpperCase());
+                                        const dragId = `${groupName}||${col.status}`;
+                                        return (
+                                            <Droppable key={dragId} droppableId={dragId}>
+                                                {(provided: any, snapshot: any) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.droppableProps}
+                                                        className={`flex-none w-[85vw] md:w-[310px] flex flex-col rounded-lg p-3 border transition-colors snap-center md:snap-align-none ${snapshot.isDraggingOver ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-300 ring-inset' : 'bg-[#f8fafc] border-slate-200/50'}`}
+                                                    >
+                                                        <div className="flex justify-between items-center mb-3 px-1 pb-2 border-b border-slate-200/50">
+                                                            <h3 className="font-bold text-[10px] text-slate-500 tracking-widest uppercase">{col.title}</h3>
+                                                            <span className="text-slate-400 text-[10px] font-bold">{colIssues.length}</span>
+                                                        </div>
+                                                        <div className="flex flex-col gap-3 min-h-[10px]">
+                                                            {colIssues.map((issue, index) => renderIssueCard(issue, index))}
+                                                            {provided.placeholder}
+                                                        </div>
                                                     </div>
-                                                    <div className="flex flex-col gap-3 min-h-[10px]">
-                                                        {colIssues.map((issue, index) => renderIssueCard(issue, index))}
-                                                        {provided.placeholder}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </Droppable>
-                                    );
-                                })}
+                                                )}
+                                            </Droppable>
+                                        );
+                                    })}
                             </div>
                         </div>
                     );
@@ -546,16 +548,16 @@ export const AgileBoard = (): React.ReactElement => {
                     <div className="flex items-center justify-between gap-3">
                         <div className="relative flex-1 md:max-w-md">
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">search</span>
-                            <input 
+                            <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search tasks..." 
+                                placeholder="Search tasks..."
                                 className="pl-9 pr-4 py-2 bg-white border border-slate-200 shadow-sm rounded-md text-[13px] w-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 placeholder:text-slate-400 font-medium transition-all h-[40px]"
                             />
                         </div>
-                        
-                        <button 
+
+                        <button
                             onClick={() => setIsCreateModalOpen(true)}
                             className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-slate-900 text-white rounded-md text-[13px] font-bold shadow-sm hover:bg-slate-800 transition-colors h-[40px] shrink-0"
                         >
@@ -569,11 +571,10 @@ export const AgileBoard = (): React.ReactElement => {
                         <div className="relative shrink-0" ref={groupRef}>
                             <button
                                 onClick={() => setIsGroupOpen(!isGroupOpen)}
-                                className={`flex items-center gap-2 px-3 py-2 bg-white border rounded-md text-[13px] font-medium transition-colors shadow-sm h-[38px] ${
-                                    groupBy !== 'NONE' 
-                                    ? 'border-blue-400 text-blue-700 bg-blue-50/30' 
-                                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                                }`}
+                                className={`flex items-center gap-2 px-3 py-2 bg-white border rounded-md text-[13px] font-medium transition-colors shadow-sm h-[38px] ${groupBy !== 'NONE'
+                                        ? 'border-blue-400 text-blue-700 bg-blue-50/30'
+                                        : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                                    }`}
                             >
                                 <span className="material-symbols-outlined text-[16px] text-slate-400">view_agenda</span>
                                 {groupBy === 'NONE' ? 'Group' : `Group: ${groupBy === 'ASSIGNEE' ? 'Assignee' : 'Epic'}`}
@@ -603,8 +604,8 @@ export const AgileBoard = (): React.ReactElement => {
                         <GenericDropdown label="Priority" options={options.priorities} selected={filters.priorities} onToggle={(v) => toggleFilter('priorities', v)} />
 
                         {hasActiveFilters && (
-                            <button 
-                                onClick={clearFilters} 
+                            <button
+                                onClick={clearFilters}
                                 className="text-[12px] text-slate-500 hover:text-blue-600 font-semibold px-2 py-1.5 hover:bg-slate-50 rounded transition-colors"
                             >
                                 Clear all
@@ -625,12 +626,12 @@ export const AgileBoard = (): React.ReactElement => {
                 )}
             </div>
 
-            <CreateIssueModal 
-                isOpen={isCreateModalOpen} 
+            <CreateIssueModal
+                isOpen={isCreateModalOpen}
                 onClose={() => {
                     setIsCreateModalOpen(false);
                     loadData();
-                }} 
+                }}
                 projectId={projectId || ''}
             />
 
@@ -648,7 +649,7 @@ export const AgileBoard = (): React.ReactElement => {
                 }}
             />
 
-            <DeleteConfirmModal 
+            <DeleteConfirmModal
                 isOpen={!!issueToDelete}
                 onClose={() => setIssueToDelete(null)}
                 onConfirm={executeDeleteIssue}

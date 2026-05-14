@@ -56,6 +56,7 @@ export const Backlog = (): React.ReactElement => {
     // Drag-and-drop state
     const [draggedIssueId, setDraggedIssueId] = useState<string | null>(null)
     const [dropTargetId, setDropTargetId] = useState<string | null>(null)
+    const touchTimeout = useRef<any>(null)
 
 
 
@@ -328,12 +329,10 @@ export const Backlog = (): React.ReactElement => {
     const handleDragEnd = () => {
         setDraggedIssueId(null)
         setDropTargetId(null)
+        if (touchTimeout.current) clearTimeout(touchTimeout.current)
     }
 
-    const handleDrop = async (e: React.DragEvent, targetIssue: IIssue) => {
-        e.preventDefault()
-        e.stopPropagation()
-        const draggedId = e.dataTransfer.getData('text/plain')
+    const processDrop = async (draggedId: string, targetIssue: IIssue) => {
         if (!draggedId || draggedId === targetIssue.id.toString()) {
             handleDragEnd()
             return
@@ -382,7 +381,6 @@ export const Backlog = (): React.ReactElement => {
         }
 
         try {
-            // Build proper IssueRequest DTO payload (only fields the backend accepts)
             const updatePayload: any = {
                 title: draggedIssue.title,
                 description: draggedIssue.description || '',
@@ -413,6 +411,58 @@ export const Backlog = (): React.ReactElement => {
         }
     }
 
+    const handleDrop = async (e: React.DragEvent, targetIssue: IIssue) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const draggedId = e.dataTransfer.getData('text/plain')
+        await processDrop(draggedId, targetIssue)
+    }
+
+    // --- TOUCH HANDLERS FOR MOBILE DnD ---
+    const handleTouchStart = (e: React.TouchEvent, issueId: string) => {
+        // Use a small timeout to distinguish between scroll and drag start
+        touchTimeout.current = setTimeout(() => {
+            setDraggedIssueId(issueId)
+            // Add a subtle vibration for feedback if supported
+            if ('vibrate' in navigator) navigator.vibrate(50)
+        }, 150)
+    }
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!draggedIssueId) return
+        
+        // Prevent scrolling while dragging
+        if (e.cancelable) e.preventDefault()
+
+        const touch = e.touches[0]
+        const element = document.elementFromPoint(touch.clientX, touch.clientY)
+        const row = element?.closest('[data-issue-row="true"]') as HTMLElement
+        
+        if (row) {
+            const targetId = row.getAttribute('data-issue-id')
+            if (targetId && targetId !== draggedIssueId) {
+                setDropTargetId(targetId)
+            } else {
+                setDropTargetId(null)
+            }
+        } else {
+            setDropTargetId(null)
+        }
+    }
+
+    const handleTouchEnd = async (e: React.TouchEvent) => {
+        if (touchTimeout.current) clearTimeout(touchTimeout.current)
+        
+        if (draggedIssueId && dropTargetId) {
+            const targetIssue = issues.find(i => i.id.toString() === dropTargetId)
+            if (targetIssue) {
+                await processDrop(draggedIssueId, targetIssue)
+            }
+        }
+        
+        handleDragEnd()
+    }
+
     const renderIssueRow = (issue: IIssue, _index: number = 0, _totalCount: number = 1, depth: number = 0, hasChildren: boolean = false) => {
         const { icon, color } = getIssueIcon(issue.type);
         const isDragging = draggedIssueId === issue.id.toString()
@@ -423,9 +473,13 @@ export const Backlog = (): React.ReactElement => {
         return (
             <div
                 key={issue.id}
+                data-issue-row="true"
+                data-issue-id={issue.id.toString()}
                 onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); if (draggedIssueId && draggedIssueId !== issue.id.toString()) { setDropTargetId(issue.id.toString()); e.dataTransfer.dropEffect = 'move' } }}
                 onDragLeave={(e) => { e.preventDefault(); setDropTargetId(null) }}
                 onDrop={(e) => handleDrop(e, issue)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
                 onClick={() => handleTaskClick(issue)}
                 className={`group grid items-center gap-0 px-0 py-0 border-b border-slate-100 last:border-b-0 last:rounded-b-xl hover:bg-slate-100 transition-all cursor-pointer w-full min-w-max relative ${isChild ? 'bg-slate-50' : 'bg-white'} ${editingField?.id === issue.id && !isUpdateModalOpen ? 'z-[100]' : 'z-0 hover:z-10'} ${isDragging ? 'opacity-40 scale-[0.98]' : ''} ${isDropTarget ? 'ring-2 ring-blue-400 ring-inset bg-blue-50/40' : ''}`}
                 style={{ gridTemplateColumns: gridTemplate }}
@@ -439,6 +493,7 @@ export const Backlog = (): React.ReactElement => {
                              draggable
                             onDragStart={(e) => { e.stopPropagation(); setDraggedIssueId(issue.id.toString()); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', issue.id.toString()) }}
                             onDragEnd={() => { setDraggedIssueId(null); setDropTargetId(null) }}
+                            onTouchStart={(e) => handleTouchStart(e, issue.id.toString())}
                             className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing hover:bg-slate-200 transition-colors rounded"
                             onClick={(e) => { e.stopPropagation(); startEditing(e, issue.id.toString(), 'actions', null) }}
                         >
@@ -910,7 +965,7 @@ export const Backlog = (): React.ReactElement => {
 
                 <div className="flex flex-col gap-4 mb-6 flex-none">
                     {/* Search and Create Row - Compact on mobile */}
-                    <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                         <div className="relative flex-1 md:max-w-md">
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">search</span>
                             <input
