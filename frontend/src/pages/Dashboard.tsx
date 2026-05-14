@@ -215,15 +215,15 @@ export const Dashboard = (): React.ReactElement => {
     return (
         <>
             <Layout projectContextName="My Workspace">
-                <div className="min-h-full bg-surface p-6 md:p-12 lg:p-20">
+                <div className="min-h-full bg-surface p-4 md:p-8 lg:p-12 xl:p-20">
                     <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
-                            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter text-slate-900 leading-none">My Workspace</h1>
-                            <p className="mt-4 text-on-surface-variant max-w-md text-sm">Manage your active sprint cycles and team collaborations from a single point of truth.</p>
+                            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter text-slate-900 leading-tight">My Workspace</h1>
+                            <p className="mt-2 md:mt-4 text-on-surface-variant max-w-md text-xs md:text-sm">Manage your active sprint cycles and team collaborations from a single point of truth.</p>
                         </div>
                         <button 
                             onClick={() => setIsModalOpen(true)}
-                            className="bg-primary text-white px-8 py-3 rounded font-semibold flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 duration-150 self-start shadow-md hover:shadow-lg"
+                            className="bg-primary text-white px-6 md:px-8 py-3 rounded font-semibold flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 duration-150 self-start shadow-md hover:shadow-lg min-h-[44px]"
                         >
                             <span className="material-symbols-outlined">add_circle</span>
                             <span>Create Project</span>
@@ -244,7 +244,7 @@ export const Dashboard = (): React.ReactElement => {
                                 </span>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
                                 {[...projects]
                                     .filter((p) => p.currentUserRole === 'PROJECT_MANAGER')
                                     .sort((a, b) => {
@@ -280,7 +280,7 @@ export const Dashboard = (): React.ReactElement => {
                                     Projects you've been added to
                                 </span>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
                                 {projects
                                     .filter((p) => p.currentUserRole === 'PROJECT_MEMBER')
                                     .map((project) => renderProjectCard(project, false, false))}

@@ -32,9 +32,9 @@ export const GenericDropdown = ({
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`flex items-center gap-1.5 px-3 py-1 bg-white border rounded-md text-[13px] font-medium transition-colors shadow-sm ${
+                className={`flex items-center gap-1.5 px-3 py-2 bg-white border rounded-md text-[13px] font-medium transition-colors shadow-sm h-[38px] ${
                     selected.length > 0
-                    ? 'border-blue-400 text-blue-700' 
+                    ? 'border-blue-400 text-blue-700 bg-blue-50/30' 
                     : 'border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
             >

@@ -128,12 +128,12 @@ export const GlobalSearch = (): React.ReactElement => {
                     onFocus={() => setIsOpen(true)}
                     onKeyDown={handleKeyDown}
                     placeholder="Search projects & issues..."
-                    className="pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-sm w-72 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium"
+                    className="pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-sm w-full md:w-72 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all placeholder:text-slate-400 font-medium"
                 />
             </div>
 
             {isOpen && query.trim() !== '' && (
-                <div className="absolute top-full left-0 mt-3 w-[420px] bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-[100] animate-in fade-in slide-in-from-top-2 origin-top-left">
+                <div className="absolute top-full left-0 mt-3 w-[calc(100vw-2rem)] md:w-[420px] bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-[100] animate-in fade-in slide-in-from-top-2 origin-top-left">
                     {isLoading ? (
                         <div className="px-5 py-4 flex items-center gap-3 text-slate-500 text-sm">
                             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -219,7 +219,7 @@ export const GlobalSearch = (): React.ReactElement => {
                         </div>
                     )}
                     <div className="px-4 py-2 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between mt-1">
-                         <div className="flex items-center gap-4">
+                         <div className="hidden md:flex items-center gap-4">
                             <div className="flex items-center gap-1">
                                 <kbd className="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-bold text-slate-500 shadow-sm">↑↓</kbd>
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Navigate</span>

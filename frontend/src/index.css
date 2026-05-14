@@ -99,6 +99,23 @@ body {
   width: 100%;
 }
 
+/* Mobile: Prevent body scroll when drawer/modal is open */
+body.overflow-hidden {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+/* Safe area insets for notched devices (iPhone X+) */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
 /* Restore missing list styles inside CKEditor 5 (Tailwind Preflight strips these) */
 .ck-content ul {
   list-style-type: disc !important;
@@ -140,6 +157,7 @@ body {
   margin-bottom: 0.5rem !important;
   line-height: 1.4 !important;
 }
+
 
 .ck-content p {
   margin-bottom: 0.75rem !important;

@@ -356,7 +356,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onCreate, project }: Creat
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}></div>
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-[800px] max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-none border border-slate-200 flex flex-col font-body antialiased transition-all duration-300">
+      <div className="relative w-full max-w-[800px] h-[98vh] md:h-auto md:max-h-[90vh] overflow-y-auto bg-white md:rounded-lg shadow-none border border-slate-200 flex flex-col font-body antialiased transition-all duration-300">
         {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-outline-variant sticky top-0 bg-white z-10">
           <h2 className="text-xl font-semibold text-on-surface">

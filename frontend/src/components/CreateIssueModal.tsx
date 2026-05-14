@@ -293,9 +293,9 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm font-inter">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm font-inter">
             <div 
-                className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden"
+                className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] md:max-h-[90vh] h-fit flex flex-col overflow-hidden"
                 role="dialog"
                 aria-modal="true"
             >
@@ -308,14 +308,14 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                 </div>
 
                 {/* Body */}
-                <div className="p-8 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
+                <div className="p-4 md:px-8 md:py-4 flex flex-col gap-6 overflow-y-auto custom-scrollbar flex-initial min-h-0">
                     
-                    <div className="flex gap-6">
-                        <div className="w-1/2">
+                    <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+                        <div className="w-full md:w-1/2">
                             <label className="block text-[10px] font-bold text-slate-500 tracking-wider mb-2 uppercase">Issue Type</label>
                             <CustomDropdown options={ISSUE_TYPES} value={issueType} onChange={setIssueType} placeholder="Select type" />
                         </div>
-                        <div className="w-1/2">
+                        <div className="w-full md:w-1/2">
                             <label className="block text-[10px] font-bold text-slate-500 tracking-wider mb-2 uppercase">Status</label>
                             <CustomDropdown options={STATUSES} value={status} onChange={setStatus} placeholder="Select status" />
                         </div>
@@ -354,8 +354,8 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                         />
                     </div>
 
-                    <div className="flex gap-6">
-                        <div className="w-1/2 relative" ref={startDateRef}>
+                    <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+                        <div className="w-full md:w-1/2 relative" ref={startDateRef}>
                             <label className="block text-[10px] font-bold text-slate-500 tracking-wider mb-2 uppercase">Start Date</label>
                             <div 
                                 onClick={() => setIsStartDateOpen(!isStartDateOpen)}
@@ -376,7 +376,7 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                                 </div>
                             )}
                         </div>
-                        <div className="w-1/2 relative" ref={endDateRef}>
+                        <div className="w-full md:w-1/2 relative" ref={endDateRef}>
                             <label className="block text-[10px] font-bold text-slate-500 tracking-wider mb-2 uppercase">Target Completion</label>
                             <div 
                                 onClick={() => setIsEndDateOpen(!isEndDateOpen)}
@@ -399,8 +399,8 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                         </div>
                     </div>
 
-                    <div className="flex gap-6">
-                        <div className="w-1/2">
+                    <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+                        <div className="w-full md:w-1/2">
                             <div className="flex items-center justify-between mb-2 h-[24px]">
                                 <label className="block text-[10px] font-bold text-slate-500 tracking-wider uppercase">Assignee</label>
                                 <div className="flex items-center gap-2">
@@ -438,7 +438,7 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                                 setAiReasoning(null);
                             }} placeholder="Unassigned" showAvatar />
                         </div>
-                        <div className="w-1/2">
+                        <div className="w-full md:w-1/2">
                             <div className="flex items-center justify-between mb-2 h-[24px]">
                                 <label className="block text-[10px] font-bold text-slate-500 tracking-wider uppercase">Priority</label>
                             </div>
@@ -494,7 +494,7 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-slate-100 flex justify-end items-center gap-4 bg-slate-50 shrink-0">
+                <div className="px-8 py-3 border-t border-slate-100 flex justify-end items-center gap-4 bg-white shrink-0">
                     <button onClick={onClose} className="px-4 py-2 text-[13px] font-bold text-slate-600 hover:text-slate-800 transition-colors">Cancel</button>
                     <button 
                         onClick={handleCreate}

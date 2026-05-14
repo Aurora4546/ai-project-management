@@ -765,7 +765,7 @@ export const Backlog = (): React.ReactElement => {
         if (groupBy === 'NONE') {
             const hierarchyRows = buildHierarchy(filteredIssues)
             return (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-8">
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-8 overflow-x-auto">
                     {renderTableHeader()}
                     <div className="flex flex-col">
                         {hierarchyRows.length === 0 ? (
@@ -864,7 +864,7 @@ export const Backlog = (): React.ReactElement => {
 
     return (
         <Layout projectContextName={projectName}>
-            <div className="p-8 h-full flex flex-col pt-6 font-inter overflow-y-auto custom-scrollbar">
+            <div className="p-3 md:p-8 h-full flex flex-col pt-4 md:pt-6 font-inter overflow-y-auto custom-scrollbar">
                 <div className="mb-6 flex-none">
                     <div className="text-[10px] font-bold text-slate-400 tracking-widest mb-1.5 uppercase">PROJECTS / {projectName}</div>
                     <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
@@ -874,70 +874,75 @@ export const Backlog = (): React.ReactElement => {
 
                 </div>
 
-                <div className="flex justify-between items-start mb-6 flex-none">
-                    <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-3 flex-wrap">
-                            {/* Search Bar */}
-                            <div className="relative">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">search</span>
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search tasks..."
-                                    className="pl-9 pr-4 py-1.5 bg-white border border-slate-200 shadow-sm rounded-md text-[13px] w-[260px] focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 placeholder:text-slate-400 font-medium transition-all"
-                                />
-                            </div>
-
-                            <div className="w-px h-6 bg-slate-200 mx-1"></div>
-
-                            {/* Group By Dropdown */}
-                            <div className="relative" ref={groupRef}>
-                                <button
-                                    onClick={() => setIsGroupOpen(!isGroupOpen)}
-                                    className={`flex items-center gap-2 px-3 py-1 bg-white border rounded-md text-[13px] font-medium transition-colors shadow-sm ${groupBy !== 'NONE'
-                                        ? 'border-blue-400 text-blue-700'
-                                        : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                                        }`}
-                                >
-                                    <span className="material-symbols-outlined text-[16px] text-slate-400">view_agenda</span>
-                                    {groupBy === 'NONE' ? 'Group' : `Group: ${groupBy.charAt(0) + groupBy.slice(1).toLowerCase()}`}
-                                </button>
-                                {isGroupOpen && (
-                                    <div className="absolute top-full left-0 mt-1 w-40 bg-white border border-slate-200 rounded-md shadow-lg py-1 z-20">
-                                        {(['NONE', 'ASSIGNEE', 'EPIC', 'STATUS'] as GroupBy[]).map(g => (
-                                            <button
-                                                key={g}
-                                                onClick={() => { setGroupBy(g); setIsGroupOpen(false); }}
-                                                className={`w-full text-left px-3 py-1.5 text-[13px] hover:bg-slate-50 ${groupBy === g ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-700'}`}
-                                            >
-                                                {g === 'NONE' ? 'None' : g === 'ASSIGNEE' ? 'Assignee' : g === 'EPIC' ? 'Epic' : 'Status'}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <GenericDropdown label="Parent" options={options.epics} selected={filters.epics} onToggle={(v) => toggleFilter('epics', v)} />
-                            <GenericDropdown label="Assignee" options={options.assignees} selected={filters.assignees} onToggle={(v) => toggleFilter('assignees', v)} />
-                            <GenericDropdown label="Issue Type" options={options.types} selected={filters.types} onToggle={(v) => toggleFilter('types', v)} />
-                            <GenericDropdown label="Label" options={options.labels} selected={filters.labels} onToggle={(v) => toggleFilter('labels', v)} />
-                            <GenericDropdown label="Status" options={options.statuses} selected={filters.statuses} onToggle={(v) => toggleFilter('statuses', v)} />
-                            <GenericDropdown label="Priority" options={options.priorities} selected={filters.priorities} onToggle={(v) => toggleFilter('priorities', v)} />
-
-                            {hasActiveFilters && (
-                                <button onClick={clearFilters} className="text-[12px] text-slate-500 hover:text-blue-600 font-medium ml-2">Clear</button>
-                            )}
+                <div className="flex flex-col gap-4 mb-6 flex-none">
+                    {/* Search and Create Row - Compact on mobile */}
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="relative flex-1 md:max-w-md">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">search</span>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search tasks..."
+                                className="pl-9 pr-4 py-2 bg-white border border-slate-200 shadow-sm rounded-md text-[13px] w-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 placeholder:text-slate-400 font-medium transition-all h-[40px]"
+                            />
                         </div>
+
+                        <button
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-slate-900 text-white rounded-md text-[13px] font-bold shadow-sm hover:bg-slate-800 transition-colors h-[40px] shrink-0"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">add</span>
+                            <span>Create<span className="hidden sm:inline"> Issue</span></span>
+                        </button>
                     </div>
 
-                    <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-1.5 bg-[#1A202C] text-white rounded-md text-[13px] font-bold shadow-sm hover:bg-slate-800 transition-colors"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">add</span>
-                        Create Issue
-                    </button>
+                    {/* Grouping and Filters Row - Centered Wrap for mobile */}
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                        <div className="relative shrink-0" ref={groupRef}>
+                            <button
+                                onClick={() => setIsGroupOpen(!isGroupOpen)}
+                                className={`flex items-center gap-2 px-3 py-2 bg-white border rounded-md text-[13px] font-medium transition-colors shadow-sm h-[38px] ${groupBy !== 'NONE'
+                                    ? 'border-blue-400 text-blue-700 bg-blue-50/30'
+                                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-[16px] text-slate-400">view_agenda</span>
+                                {groupBy === 'NONE' ? 'Group' : `Group: ${groupBy.charAt(0) + groupBy.slice(1).toLowerCase()}`}
+                            </button>
+                            {isGroupOpen && (
+                                <div className="absolute top-full left-0 mt-1 w-44 bg-white border border-slate-200 rounded-md shadow-xl py-1 z-50">
+                                    {(['NONE', 'ASSIGNEE', 'EPIC', 'STATUS'] as GroupBy[]).map(g => (
+                                        <button
+                                            key={g}
+                                            onClick={() => { setGroupBy(g); setIsGroupOpen(false); }}
+                                            className={`w-full text-left px-3 py-2.5 text-[13px] hover:bg-slate-50 ${groupBy === g ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-700'}`}
+                                        >
+                                            {g === 'NONE' ? 'None' : g === 'ASSIGNEE' ? 'Assignee' : g === 'EPIC' ? 'Epic' : 'Status'}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="hidden md:block w-px h-6 bg-slate-200 mx-1"></div>
+
+                        <GenericDropdown label="Parent" options={options.epics} selected={filters.epics} onToggle={(v) => toggleFilter('epics', v)} />
+                        <GenericDropdown label="Assignee" options={options.assignees} selected={filters.assignees} onToggle={(v) => toggleFilter('assignees', v)} />
+                        <GenericDropdown label="Issue Type" options={options.types} selected={filters.types} onToggle={(v) => toggleFilter('types', v)} />
+                        <GenericDropdown label="Label" options={options.labels} selected={filters.labels} onToggle={(v) => toggleFilter('labels', v)} />
+                        <GenericDropdown label="Status" options={options.statuses} selected={filters.statuses} onToggle={(v) => toggleFilter('statuses', v)} />
+                        <GenericDropdown label="Priority" options={options.priorities} selected={filters.priorities} onToggle={(v) => toggleFilter('priorities', v)} />
+
+                        {hasActiveFilters && (
+                            <button 
+                                onClick={clearFilters} 
+                                className="text-[12px] text-slate-500 hover:text-blue-600 font-semibold px-2 py-1.5 hover:bg-slate-50 rounded transition-colors"
+                            >
+                                Clear all
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {isLoading ? (

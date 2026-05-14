@@ -91,6 +91,7 @@ export const Reports = (): React.ReactElement => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'total' | 'completed' | 'open' | 'overdue' | 'unassigned' | 'messages' | null>(null)
   const [reportToDelete, setReportToDelete] = useState<IReport | null>(null)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
   // Load report history on mount
   useEffect(() => {
@@ -157,6 +158,7 @@ export const Reports = (): React.ReactElement => {
     if (report?.id === selected.id) return
     
     setIsReportLoading(true)
+    setIsHistoryOpen(false) // Close history on mobile after selection
     try {
       const fullReport = await getReportById(projectId, selected.id)
       setReport(fullReport)
@@ -244,9 +246,12 @@ export const Reports = (): React.ReactElement => {
 
   return (
     <Layout projectContextName={report?.projectName || 'AI Reports'}>
-      <div className="flex h-full overflow-hidden font-inter">
+      <div className="flex h-[calc(100vh-64px)] overflow-hidden font-inter relative">
         {/* ── Report History Sidebar ── */}
-        <div className="w-72 flex-none bg-slate-50 border-r border-slate-200 flex flex-col">
+        <div className={`
+          ${isHistoryOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          absolute md:relative z-30 md:z-auto w-72 flex-none bg-slate-50 border-r border-slate-200 flex flex-col h-full shadow-2xl md:shadow-none transition-transform duration-300
+        `}>
           <div className="p-4 border-b border-slate-200">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -333,22 +338,40 @@ export const Reports = (): React.ReactElement => {
           </div>
         </div>
 
+        {/* Mobile Backdrop for Sidebar */}
+        {isHistoryOpen && (
+          <div 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-20 md:hidden"
+            onClick={() => setIsHistoryOpen(false)}
+          />
+        )}
+
         {/* ── Main Content Area ── */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto pt-6 px-4 md:p-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="text-[10px] font-bold text-slate-400 tracking-widest mb-1.5 uppercase">
+            <div className="text-[11px] font-bold text-slate-400 tracking-[0.1em] mb-3 uppercase">
               PROJECTS / {report?.projectName || 'Reports'}
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[28px] text-indigo-500">analytics</span>
-                  AI Project Reports
-                </h1>
-                <p className="text-sm text-slate-500 mt-1">
-                  Generate intelligent project analysis powered by Google Gemini AI
-                </p>
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+              <div className="flex items-start gap-3 md:gap-4">
+                {/* Mobile Sidebar Toggle */}
+                <button 
+                    onClick={() => setIsHistoryOpen(true)}
+                    className="p-2 -ml-2 -mt-1 text-slate-400 hover:text-slate-600 md:hidden flex items-center justify-center shrink-0 min-w-[44px] min-h-[44px]"
+                    aria-label="Open report history"
+                >
+                    <span className="material-symbols-outlined text-[26px]">menu_open</span>
+                </button>
+                <div className="flex flex-col gap-1.5">
+                  <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2 md:gap-4">
+                    <span className="material-symbols-outlined text-[28px] md:text-[36px] text-indigo-500">analytics</span>
+                    AI Project Reports
+                  </h1>
+                  <p className="text-[13px] md:text-sm text-slate-500 leading-relaxed max-w-2xl">
+                    Generate intelligent project analysis powered by Google Gemini AI
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 {report && (
@@ -411,10 +434,10 @@ export const Reports = (): React.ReactElement => {
               )}
 
               {/* Skeleton Grid */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[...Array(4)].map((_, i) => <ShimmerStat key={i} />)}
               </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[...Array(4)].map((_, i) => <ShimmerCard key={i} />)}
               </div>
             </div>
@@ -454,7 +477,7 @@ export const Reports = (): React.ReactElement => {
               </div>
 
               {/* Stats Row */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
                 <StatCard
                   value={report.totalIssues}
                   label="Total Issues"
@@ -536,7 +559,7 @@ export const Reports = (): React.ReactElement => {
               </div>
 
               {/* AI Narrative Sections */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 <NarrativeCard
                   title="Executive Summary"
                   content={report.executiveSummary}
@@ -572,7 +595,7 @@ export const Reports = (): React.ReactElement => {
               />
 
               {/* New Comprehensive Sections */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                 <NarrativeCard
                   title="Sprint Health"
                   content={report.sprintHealth}
@@ -596,7 +619,7 @@ export const Reports = (): React.ReactElement => {
               />
 
               {/* Charts Section */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                 {/* Issues by Status — Donut Chart */}
                 <ChartCard title="Issues by Status" icon="donut_small">
                   <ResponsiveContainer width="100%" height={260}>

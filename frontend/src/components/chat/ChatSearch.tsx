@@ -89,7 +89,13 @@ export const ChatSearch = ({
     }
 
     return (
-        <div className="w-80 h-full bg-white border-l border-slate-200 flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+        <>
+            {/* Mobile Backdrop */}
+            <div 
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[35] md:hidden animate-in fade-in duration-300"
+                onClick={onClose}
+            />
+            <div className="fixed md:relative right-0 top-0 w-full md:w-80 h-full bg-white border-l border-slate-200 flex flex-col shadow-2xl z-40 md:z-auto animate-in slide-in-from-right duration-300">
             <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
                 <h3 className="font-bold text-[14px] text-slate-800">Search Chat</h3>
                 <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
@@ -228,5 +234,6 @@ export const ChatSearch = ({
                 onClose={() => setActivePreviewFile(null)} 
             />
         </div>
+        </>
     )
 }

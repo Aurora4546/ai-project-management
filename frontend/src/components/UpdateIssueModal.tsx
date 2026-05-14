@@ -465,9 +465,9 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
     if (!isOpen || !initialTask) return null
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm font-inter">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-6 bg-slate-900/40 backdrop-blur-sm font-inter">
             <div 
-                className="bg-white rounded-lg shadow-2xl w-full max-w-7xl max-h-[95vh] flex flex-col overflow-hidden"
+                className="bg-white rounded-lg shadow-2xl w-full max-w-7xl max-h-[98vh] md:max-h-[95vh] h-fit flex flex-col overflow-hidden font-inter border border-slate-200/60"
                 role="dialog"
                 aria-modal="true"
             >
@@ -502,15 +502,16 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                     </div>
                 </div>
 
-                <div className="flex-1 flex overflow-hidden">
-                    {/* LEFT COLUMN */}
-                    <div className={`transition-all duration-300 ease-in-out flex flex-col gap-8 overflow-y-auto custom-scrollbar bg-white ${isSidePanelOpen ? 'flex-[5.5] p-10 border-r border-slate-100' : 'flex-1 p-12'}`}>
-                        <div className="flex gap-8">
-                            <div className="w-1/2">
+                <div className="overflow-y-auto custom-scrollbar min-h-0 flex-initial">
+                    <div className="flex flex-col md:flex-row items-stretch">
+                        {/* LEFT COLUMN */}
+                        <div className={`transition-all duration-300 ease-in-out flex flex-col gap-4 md:gap-5 bg-white ${isSidePanelOpen ? 'flex-[5.5] w-full md:w-auto p-5 md:px-10 md:pt-6 md:pb-2 border-b md:border-b-0 md:border-r border-slate-100' : 'w-full p-6 md:px-12 md:pt-6 md:pb-2'}`}>
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+                            <div className="w-full md:w-1/2">
                                 <label className="block text-[11px] font-bold text-slate-400 tracking-wider mb-2.5 uppercase">Issue Type</label>
                                 <CustomDropdown options={ISSUE_TYPES} value={issueType} onChange={setIssueType} placeholder="Select type" />
                             </div>
-                            <div className="w-1/2">
+                            <div className="w-full md:w-1/2">
                                 <label className="block text-[11px] font-bold text-slate-400 tracking-wider mb-2.5 uppercase">Status</label>
                                 <CustomDropdown options={STATUSES} value={status} onChange={setStatus} placeholder="Select status" />
                             </div>
@@ -544,13 +545,13 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                                 value={description}
                                 onChange={setDescription}
                                 placeholder="Add a detailed description..."
-                                minHeight={250}
+                                minHeight={120}
                                 maxLength={500}
                             />
                         </div>
 
-                        <div className="flex gap-8">
-                            <div className="w-1/2 relative" ref={startDateRef}>
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+                            <div className="w-full md:w-1/2 relative" ref={startDateRef}>
                                 <label className="block text-[11px] font-bold text-slate-400 tracking-wider mb-2.5 uppercase">Start Date</label>
                                 <div 
                                     onClick={() => setIsStartDateOpen(!isStartDateOpen)}
@@ -571,7 +572,7 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                                     </div>
                                 )}
                             </div>
-                            <div className="w-1/2 relative" ref={endDateRef}>
+                            <div className="w-full md:w-1/2 relative" ref={endDateRef}>
                                 <label className="block text-[11px] font-bold text-slate-400 tracking-wider mb-2.5 uppercase">Target Completion</label>
                                 <div 
                                     onClick={() => setIsEndDateOpen(!isEndDateOpen)}
@@ -594,8 +595,8 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                             </div>
                         </div>
 
-                        <div className="flex gap-8">
-                            <div className="w-1/2">
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+                            <div className="w-full md:w-1/2">
                                 <div className="flex items-center justify-between mb-2.5 h-[20px]">
                                     <label className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase">Assignee</label>
                                     <div className="flex items-center gap-2">
@@ -633,7 +634,7 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                                     setAiReasoning(null);
                                 }} placeholder="Unassigned" showAvatar />
                             </div>
-                            <div className="w-1/2">
+                            <div className="w-full md:w-1/2">
                                 <div className="flex items-center justify-between mb-2.5 h-[20px]">
                                     <label className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase">Priority</label>
                                 </div>
@@ -692,9 +693,11 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                         </div>
                     </div>
 
-                    {/* RIGHT COLUMN */}
-                    <div className={`transition-all duration-300 ease-in-out flex flex-col bg-slate-50/10 ${isSidePanelOpen ? 'flex-[4.5] opacity-100' : 'flex-0 w-0 opacity-0 overflow-hidden'}`}>
-                        <div className="px-8 pt-5 border-b border-slate-100 flex items-center gap-6 bg-white/50 backdrop-blur-sm sticky top-0 z-20 shrink-0">
+                        {/* RIGHT COLUMN */}
+                        <div className={`transition-all duration-300 ease-in-out flex flex-col bg-slate-50/10 ${isSidePanelOpen ? 'flex-auto md:flex-[4.5] w-full md:w-auto opacity-100' : 'flex-0 h-0 md:h-0 md:w-0 opacity-0 overflow-hidden'}`}>
+                            {isSidePanelOpen && (
+                                <>
+                                    <div className="px-8 pt-5 border-b border-slate-100 flex items-center gap-6 bg-white/50 backdrop-blur-sm sticky top-0 z-20 shrink-0">
                             <button 
                                 onClick={() => setActiveTab('comments')}
                                 className={`pb-3 text-[11px] font-bold tracking-[0.1em] uppercase transition-all border-b-2 flex items-center gap-1.5 ${activeTab === 'comments' ? 'text-blue-600 border-blue-600' : 'text-slate-400 border-transparent hover:text-slate-600'}`}
@@ -712,7 +715,7 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-slate-50/10 flex flex-col relative min-h-0">
+                        <div className="flex-1 p-6 bg-slate-50/10 flex flex-col relative">
                             {activeTab === 'comments' ? (
                                 <div className="space-y-6">
                                     {comments.map((comment) => {
@@ -837,7 +840,7 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
 
                         {/* Add Comment Input - Fixed at bottom outside scroll area */}
                         {activeTab === 'comments' && (
-                            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 shrink-0 z-20">
+                            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 shrink-0 z-20 sticky bottom-0">
                                 <div className="flex-1 flex flex-col gap-3">
                                     <div className="bg-white border border-slate-200 rounded-xl focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-50/50 transition-all shadow-sm flex flex-col min-h-[90px]">
                                         <div className="flex-1 relative text-[13px]">
@@ -864,10 +867,13 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                                 </div>
                             </div>
                         )}
+                            </>
+                        )}
+                    </div>
                     </div>
                 </div>
 
-                <div className="p-8 border-t border-slate-100 flex justify-end items-center gap-5 bg-white shrink-0">
+                <div className="px-8 py-3 border-t border-slate-100 flex justify-end items-center gap-5 bg-white shrink-0">
                     <button onClick={onClose} className="px-6 py-2.5 text-[14px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all">Discard Changes</button>
                     <button 
                         onClick={handleSave}

@@ -49,6 +49,7 @@ export const TeamChat = (): React.ReactElement => {
     const [notification, setNotification] = useState<IChatNotification | null>(null)
     const [unreadCounts, setUnreadCounts] = useState<IUnreadCountsResponse>({ projects: {}, dms: {} })
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -176,6 +177,7 @@ export const TeamChat = (): React.ReactElement => {
     // Update active channel
     const handleChannelSwitch = (channel: ActiveChannel) => {
         setActiveChannel(channel)
+        setIsSidebarOpen(false) // Close sidebar on mobile after selection
     }
 
     // Reactive deep-link handler - Only handles state transitions
@@ -365,21 +367,42 @@ export const TeamChat = (): React.ReactElement => {
             projectContextName={project?.name || 'Loading Chat...'}
             onUnreadCountsChange={setUnreadCounts}
         >
-            <div className="flex h-[calc(100vh-64px)] overflow-hidden font-inter">
+            <div className="flex h-[calc(100vh-64px)] overflow-hidden font-inter relative">
                 {/* Left: Members Sidebar */}
-                <ChatMembersSidebar 
-                    members={dmMembers} 
-                    onlineUsers={onlineUsers} 
-                    activeChannel={activeChannel}
-                    onChannelSwitch={handleChannelSwitch}
-                    unreadCounts={unreadCounts}
-                />
+                <div className={`
+                    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+                    absolute md:relative z-30 md:z-auto transition-transform duration-300 h-full shadow-2xl md:shadow-none
+                `}>
+                    <ChatMembersSidebar 
+                        members={dmMembers} 
+                        onlineUsers={onlineUsers} 
+                        activeChannel={activeChannel}
+                        onChannelSwitch={handleChannelSwitch}
+                        unreadCounts={unreadCounts}
+                    />
+                </div>
+
+                {/* Mobile Backdrop for Sidebar */}
+                {isSidebarOpen && (
+                    <div 
+                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-20 md:hidden"
+                        onClick={() => setIsSidebarOpen(false)}
+                    />
+                )}
 
                 {/* Center: Chat Interface */}
-                <div className="flex-1 flex flex-col min-w-0 bg-white">
+                <div className="flex-1 flex flex-col min-w-0 bg-white relative">
                     {/* Header */}
-                    <div className="h-16 flex items-center justify-between px-8 border-b border-slate-200 shrink-0">
-                        <div className="flex items-center gap-4">
+                    <div className="h-16 flex items-center justify-between px-4 md:px-8 border-b border-slate-200 shrink-0">
+                        <div className="flex items-center gap-2 md:gap-4">
+                            {/* Mobile Sidebar Toggle */}
+                            <button 
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="p-2 -ml-2 text-slate-400 hover:text-slate-600 md:hidden flex items-center justify-center"
+                                aria-label="Open chat menu"
+                            >
+                                <span className="material-symbols-outlined">menu_open</span>
+                            </button>
                             {activeChannel.type === 'PROJECT' ? (
                                 <h2 className="text-[17px] font-bold text-slate-800 tracking-tight">
                                     {project?.name}
