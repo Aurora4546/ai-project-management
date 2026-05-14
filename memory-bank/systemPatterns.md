@@ -20,6 +20,14 @@
 - **Centralized Utility Pattern:** `mentionUtils.tsx` for consistent `@mention` and `#issue` parsing/rendering across all surfaces.
 - **Context + Hooks Pattern:** `AuthContext` for authentication state; `useWebSocket` custom hook for all WS lifecycle management.
 
+## Testing Patterns (Backend)
+- **Slice Testing:** Utilizing `@DataJpaTest` for repositories and `@WebMvcTest` for controllers to ensure isolated, high-performance validation.
+- **Bean Overriding:** Leveraging `@MockitoBean` (Spring Boot 4+) for clean dependency mocking within slice contexts.
+- **Security Integration:** Explicitly using `@Import(JwtAuthenticationFilter.class)` in controller tests to validate the security filter chain while mocking underlying `JwtService` and `UserRepository` dependencies.
+- **Environment Parity:** H2 configured in `MODE=PostgreSQL` for testing to mirror production database behavior (e.g., column constraints, sequence logic).
+- **Profile-Based Isolation:** Using `@Profile("!test")` on production-only infrastructure beans (database migrations, schema update listeners) to ensure test contexts initialize without side effects or missing production environment variables.
+- **Mock AI Layer:** Explicitly mocking `ChatModel` and `ChatClient.Builder` to maintain unit test isolation from external LLM providers.
+
 ## Component Architecture
 
 ### Backend (Spring Boot MVC)

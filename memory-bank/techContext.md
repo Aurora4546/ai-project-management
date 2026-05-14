@@ -1,13 +1,13 @@
 # Technical Context
 
 ## Technology Stack
-- **Backend:** Java 25, Spring Boot 4.0.3, Lombok, Jakarta Validation
+- **Backend:** Java 25, Spring Boot 4.0.5, Lombok, Jakarta Validation
 - **Frontend:** React.js 18+ (Hooks, Context, Formik, Yup), Vite, TypeScript
-- **Database:** PostgreSQL (managed locally via pgAdmin)
+- **Database:** PostgreSQL (Production), H2 (Test - PostgreSQL Mode)
 - **Real-Time Communication:** Spring Boot WebSockets (STOMP/SockJS) via `@stomp/stompjs` + `sockjs-client`
 - **AI Integration:** Google Gemini API (`spring-ai-google-genai-starter`)
 - **Reporting:** OpenPDF
-- **Testing:** JUnit 5 (Backend)
+- **Testing:** JUnit 5, Mockito, MockMvc, Spring Boot Test (Modular Starters)
 - **Rich Text:** CKEditor integration (`RichTextEditor.tsx`)
 - **HTTP Client:** Axios with JWT interceptor
 - **Styling:** TailwindCSS (exclusively, no standard CSS files)

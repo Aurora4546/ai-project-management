@@ -20,6 +20,7 @@ public class PmanageApplication {
 	}
 
 	@Bean
+	@org.springframework.context.annotation.Profile("!test")
 	CommandLineRunner dropRoleColumn(JdbcTemplate jdbcTemplate) {
 		return args -> {
 			try {
