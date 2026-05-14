@@ -413,7 +413,7 @@ export const Backlog = (): React.ReactElement => {
         }
     }
 
-    const renderIssueRow = (issue: IIssue, index: number = 0, totalCount: number = 1, depth: number = 0, hasChildren: boolean = false) => {
+    const renderIssueRow = (issue: IIssue, _index: number = 0, _totalCount: number = 1, depth: number = 0, hasChildren: boolean = false) => {
         const { icon, color } = getIssueIcon(issue.type);
         const isDragging = draggedIssueId === issue.id.toString()
         const isDropTarget = dropTargetId === issue.id.toString()
