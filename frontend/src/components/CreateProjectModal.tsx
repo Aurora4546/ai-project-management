@@ -356,9 +356,9 @@ export const CreateProjectModal = ({ isOpen, onClose, onCreate, project }: Creat
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}></div>
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-[800px] h-[98vh] md:h-auto md:max-h-[90vh] overflow-y-auto bg-white md:rounded-lg shadow-none border border-slate-200 flex flex-col font-body antialiased transition-all duration-300">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-outline-variant sticky top-0 bg-white z-10">
+      <div className="relative w-full max-w-[800px] max-h-[85vh] bg-white md:rounded-xl shadow-2xl flex flex-col font-body antialiased transition-all duration-300 overflow-hidden">
+        {/* Modal Header - Fixed */}
+        <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-white shrink-0 z-10">
           <h2 className="text-xl font-semibold text-on-surface">
             {project ? (
               <>Update <strong>{project.name}</strong></>
@@ -376,21 +376,20 @@ export const CreateProjectModal = ({ isOpen, onClose, onCreate, project }: Creat
           </button>
         </div>
 
-        {apiSuccess && (
-          <div className="mx-6 mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded text-sm flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">check_circle</span>
-            {apiSuccess}
-          </div>
-        )}
-        {apiError && (
-          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">error</span>
-            {apiError}
-          </div>
-        )}
-
-        {/* Modal Content */}
-        <div className="p-6 space-y-5">
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          {apiSuccess && (
+            <div className="mb-6 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">check_circle</span>
+              {apiSuccess}
+            </div>
+          )}
+          {apiError && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">error</span>
+              {apiError}
+            </div>
+          )}
           {/* Project Name */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant flex items-center justify-between">
@@ -512,11 +511,11 @@ export const CreateProjectModal = ({ isOpen, onClose, onCreate, project }: Creat
           </div>
         </div>
 
-        {/* Modal Footer */}
-        <div className="px-6 py-4 flex justify-end items-center gap-3 bg-slate-50/50 rounded-b-lg sticky bottom-0 border-t border-slate-100">
+        {/* Modal Footer - Fixed */}
+        <div className="px-8 py-4 flex justify-end items-center gap-4 bg-white border-t border-slate-100 shrink-0">
           <button
             onClick={onClose}
-            className="text-sm font-semibold text-primary px-4 py-2 hover:bg-slate-100 transition-colors rounded"
+            className="px-6 py-2.5 text-[14px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all"
             aria-label="Cancel"
             tabIndex={0}
           >
@@ -525,7 +524,7 @@ export const CreateProjectModal = ({ isOpen, onClose, onCreate, project }: Creat
           <button
             onClick={handleSubmit}
             disabled={projectName.length === 0 || projectKey.length < 4 || isLoading}
-            className="text-sm font-semibold text-white bg-[#1E293B] px-5 py-2 hover:bg-[#2e3d4e] transition-colors rounded shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-10 py-2.5 bg-[#1A202C] text-white rounded-lg text-[14px] font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 hover:translate-y-[-1px] active:translate-y-[0px] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
             aria-label={project ? 'Save changes' : 'Create project'}
             tabIndex={0}
           >

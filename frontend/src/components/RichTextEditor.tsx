@@ -78,7 +78,7 @@ export const RichTextEditor = ({
     return (
         <div className="border border-slate-200 rounded-lg overflow-hidden bg-white focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-50 transition-all shadow-sm">
             {/* Toolbar */}
-            <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-slate-100 bg-slate-50/80">
+            <div className="flex items-center flex-wrap gap-0.5 px-3 py-1.5 border-b border-slate-100 bg-slate-50/80">
                 <MenuButton
                     onClick={() => editor.chain().focus().toggleBold().run()}
                     isActive={editor.isActive('bold')}

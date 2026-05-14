@@ -19,6 +19,7 @@ interface MentionTextareaProps {
     memberData?: SuggestionItem[]
     issueData?: SuggestionItem[]
     onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
+    onPaste?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void
 }
 
 export const MentionTextarea = ({
@@ -29,7 +30,8 @@ export const MentionTextarea = ({
     minHeight = 120,
     memberData = [],
     issueData = [],
-    onKeyDown
+    onKeyDown,
+    onPaste
 }: MentionTextareaProps) => {
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [suggestionType, setSuggestionType] = useState<'@' | '#' | null>(null)
@@ -148,6 +150,7 @@ export const MentionTextarea = ({
                 value={value}
                 onChange={handleChange}
                 onKeyDown={handleInternalKeyDown}
+                onPaste={onPaste}
                 placeholder={placeholder}
                 className={`w-full resize-y focus:outline-none ${className}`}
                 style={{ minHeight }}
@@ -158,8 +161,8 @@ export const MentionTextarea = ({
             {showSuggestions && suggestions.length > 0 && (
                 <div
                     ref={suggestionsRef}
-                    className="absolute z-[9999] left-4 bottom-full mb-2 w-72 bg-white/90 backdrop-blur-md border border-slate-200/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200"
-                    style={{ maxHeight: 300, overflowY: 'auto' }}
+                    className="absolute z-[9999] left-[-42px] md:left-4 bottom-full mb-3 w-[calc(100vw-32px)] md:w-80 max-w-[320px] bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200"
+                    style={{ maxHeight: 350, overflowY: 'auto' }}
                 >
                     <div className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                         <div className="flex items-center gap-2">

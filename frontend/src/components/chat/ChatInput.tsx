@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { MentionTextarea } from '../MentionTextarea'
 import { getAvatarColor, getIssueTheme } from '../../utils'
 import { useAuth } from '../../context/AuthContext'
@@ -26,9 +26,18 @@ export const ChatInput = ({
     const { user } = useAuth()
     const [message, setMessage] = useState('')
     const [showAttachmentMenu, setShowAttachmentMenu] = useState(false)
+    const [pendingFile, setPendingFile] = useState<File | null>(null)
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const typingTimeoutRef = useRef<any>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const menuRef = useRef<HTMLDivElement>(null)
+
+    // Cleanup object URL on unmount
+    useEffect(() => {
+        return () => {
+            if (previewUrl) URL.revokeObjectURL(previewUrl)
+        }
+    }, [previewUrl])
 
     // Handle clicking outside to close menu
     React.useEffect(() => {
@@ -53,9 +62,17 @@ export const ChatInput = ({
     }
 
     const handleSend = () => {
-        if (!message.trim()) return
-        onSendMessage(message)
-        setMessage('')
+        if (!message.trim() && !pendingFile) return
+        
+        if (pendingFile) {
+            onUploadFile(pendingFile)
+            handleCancelPreview()
+        }
+        
+        if (message.trim()) {
+            onSendMessage(message)
+            setMessage('')
+        }
         onTyping(false)
     }
 
@@ -74,11 +91,42 @@ export const ChatInput = ({
         setShowAttachmentMenu(false)
     }
 
+    const handleFileSelection = (file: File) => {
+        if (previewUrl) URL.revokeObjectURL(previewUrl)
+        setPendingFile(file)
+        if (file.type.startsWith('image/')) {
+            setPreviewUrl(URL.createObjectURL(file))
+        } else {
+            setPreviewUrl(null)
+        }
+    }
+
+    const handleCancelPreview = () => {
+        if (previewUrl) URL.revokeObjectURL(previewUrl)
+        setPendingFile(null)
+        setPreviewUrl(null)
+    }
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            onUploadFile(file)
+            handleFileSelection(file)
             if (fileInputRef.current) fileInputRef.current.value = ''
+        }
+    }
+
+    const handlePaste = (e: React.ClipboardEvent) => {
+        const items = e.clipboardData.items
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile()
+                if (file) {
+                    handleFileSelection(file)
+                    // Don't prevent default if we want to allow pasting text AND image simultaneously 
+                    // (though usually paste is one or the other)
+                    break
+                }
+            }
         }
     }
 
@@ -109,6 +157,33 @@ export const ChatInput = ({
 
     return (
         <div className="p-4 bg-white border-t border-slate-200">
+            {/* Attachment Preview Area */}
+            {pendingFile && (
+                <div className="mb-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                    <div className="inline-flex items-center gap-3 p-2 bg-slate-50 border border-slate-200 rounded-xl relative group">
+                        {previewUrl ? (
+                            <div className="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 bg-white">
+                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                            </div>
+                        ) : (
+                            <div className="w-12 h-12 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+                                <span className="material-symbols-outlined text-[24px]">description</span>
+                            </div>
+                        )}
+                        <div className="flex flex-col pr-8">
+                            <span className="text-[12px] font-bold text-slate-700 truncate max-w-[200px]">{pendingFile.name}</span>
+                            <span className="text-[10px] text-slate-400">{(pendingFile.size / 1024).toFixed(1)} KB</span>
+                        </div>
+                        <button 
+                            onClick={handleCancelPreview}
+                            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center shadow-lg hover:bg-black transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="flex items-end gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-slate-100 focus-within:border-slate-300 transition-all relative">
                 <div className="relative" ref={menuRef}>
                     <button 
@@ -182,14 +257,15 @@ export const ChatInput = ({
                         memberData={memberSuggestions}
                         issueData={issueSuggestions}
                         onKeyDown={handleKeyDown}
+                        onPaste={handlePaste}
                     />
                 </div>
 
                 <button 
                     onClick={handleSend}
-                    disabled={!message.trim()}
+                    disabled={!message.trim() && !pendingFile}
                     className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all shrink-0 mb-0.5 ${
-                        message.trim() 
+                        (message.trim() || pendingFile)
                         ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-200 transform hover:scale-105 active:scale-95' 
                         : 'text-slate-300'
                     }`}

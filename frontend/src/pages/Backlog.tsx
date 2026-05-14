@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { CreateIssueModal } from '../components/CreateIssueModal'
@@ -47,6 +48,7 @@ export const Backlog = (): React.ReactElement => {
 
 
     const [editingField, setEditingField] = useState<{ id: string, field: string } | null>(null)
+    const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null)
     const [draftValue, setDraftValue] = useState<any>(null)
     const [project, setProject] = useState<IProject | null>(null)
     const [projectLabels, setProjectLabels] = useState<ILabel[]>([])
@@ -120,6 +122,15 @@ export const Backlog = (): React.ReactElement => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (editingField) setEditingField(null);
+        };
+        // Listen to all scroll events in capture phase to catch container scrolls
+        window.addEventListener('scroll', handleScroll, true);
+        return () => window.removeEventListener('scroll', handleScroll, true);
+    }, [editingField]);
+
 
     useEffect(() => {
         loadData();
@@ -191,7 +202,9 @@ export const Backlog = (): React.ReactElement => {
 
 
 
-    const startEditing = (issueId: string, field: string, initialValue: any) => {
+    const startEditing = (e: React.MouseEvent, issueId: string, field: string, initialValue: any) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setTriggerRect(rect);
         setEditingField({ id: issueId, field });
         setDraftValue(initialValue);
     };
@@ -400,12 +413,13 @@ export const Backlog = (): React.ReactElement => {
         }
     }
 
-    const renderIssueRow = (issue: IIssue, depth: number = 0, hasChildren: boolean = false) => {
+    const renderIssueRow = (issue: IIssue, index: number = 0, totalCount: number = 1, depth: number = 0, hasChildren: boolean = false) => {
         const { icon, color } = getIssueIcon(issue.type);
         const isDragging = draggedIssueId === issue.id.toString()
         const isDropTarget = dropTargetId === issue.id.toString()
         const isExpanded = expandedTrees.has(issue.id.toString())
         const isChild = depth > 0
+        
         return (
             <div
                 key={issue.id}
@@ -422,17 +436,23 @@ export const Backlog = (): React.ReactElement => {
                     {/* Drag Handle & Actions Menu */}
                     <div className="w-8 h-10 shrink-0 flex items-center justify-center relative">
                         <div
-                            draggable
+                             draggable
                             onDragStart={(e) => { e.stopPropagation(); setDraggedIssueId(issue.id.toString()); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', issue.id.toString()) }}
                             onDragEnd={() => { setDraggedIssueId(null); setDropTargetId(null) }}
                             className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing hover:bg-slate-200 transition-colors rounded"
-                            onClick={(e) => { e.stopPropagation(); startEditing(issue.id.toString(), 'actions', null) }}
+                            onClick={(e) => { e.stopPropagation(); startEditing(e, issue.id.toString(), 'actions', null) }}
                         >
                             <span className="material-symbols-outlined text-[18px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">drag_indicator</span>
                         </div>
-                        {editingField?.id === issue.id.toString() && editingField.field === 'actions' && (
+                        {editingField?.id === issue.id.toString() && editingField.field === 'actions' && triggerRect && createPortal(
                             <div
-                                className="absolute left-6 top-6 bg-white border border-slate-200 rounded-lg shadow-xl z-[100] w-32 py-1 transform animate-in fade-in zoom-in duration-100"
+                                className="fixed bg-white border border-slate-200 rounded-lg shadow-xl z-[9999] w-32 py-1 transform animate-in fade-in zoom-in duration-100"
+                                style={{ 
+                                    top: triggerRect.bottom + 4, 
+                                    left: triggerRect.left,
+                                    maxHeight: '300px',
+                                    overflowY: 'auto'
+                                }}
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <button
@@ -447,7 +467,8 @@ export const Backlog = (): React.ReactElement => {
                                 >
                                     <span className="material-symbols-outlined text-[16px]">delete</span> Delete
                                 </button>
-                            </div>
+                            </div>,
+                            document.body
                         )}
                     </div>
 
@@ -477,7 +498,7 @@ export const Backlog = (): React.ReactElement => {
                 {/* Title */}
                 <div
                     className="flex items-center gap-3 min-w-0 pl-6 pr-3 h-10 border-r border-slate-100 overflow-hidden relative cursor-text group/edit"
-                    onClick={(e) => { e.stopPropagation(); startEditing(issue.id, 'title', issue.title); }}
+                    onClick={(e) => { e.stopPropagation(); startEditing(e, issue.id, 'title', issue.title); }}
                 >
                     {editingField?.id === issue.id && editingField.field === 'title' ? (
                         <input
@@ -506,7 +527,7 @@ export const Backlog = (): React.ReactElement => {
                 {/* Due Date */}
                 <div
                     className="flex items-center gap-1.5 text-slate-500 px-3 h-10 border-r border-slate-100 cursor-pointer relative hover:bg-slate-50/50 transition-colors group/edit"
-                    onClick={(e) => { e.stopPropagation(); startEditing(issue.id, 'dueDate', issue.endDate); }}
+                    onClick={(e) => { e.stopPropagation(); startEditing(e, issue.id, 'dueDate', issue.endDate); }}
                 >
                     <>
                         <span className="material-symbols-outlined text-[14px]">calendar_today</span>
@@ -514,9 +535,13 @@ export const Backlog = (): React.ReactElement => {
                             {issue.endDate ? new Date(issue.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '-'}
                         </span>
                     </>
-                    {editingField?.id === issue.id && editingField.field === 'dueDate' && (
+                    {editingField?.id === issue.id && editingField.field === 'dueDate' && triggerRect && createPortal(
                         <div
-                            className="absolute left-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-[100] min-w-[260px] transform animate-in fade-in zoom-in duration-150 origin-top"
+                            className="fixed bg-white border border-slate-200 rounded-xl shadow-2xl z-[9999] min-w-[260px] transform animate-in fade-in zoom-in duration-150 origin-top"
+                            style={{ 
+                                top: triggerRect.bottom + 4, 
+                                left: triggerRect.left 
+                            }}
                             onClick={(e) => e.stopPropagation()}
                         >
                             <Calendar
@@ -524,7 +549,8 @@ export const Backlog = (): React.ReactElement => {
                                 onChange={(d) => setDraftValue(d)}
                                 onSave={() => { handleFieldEdit(issue.id, 'endDate', draftValue); setEditingField(null); }}
                             />
-                        </div>
+                        </div>,
+                        document.body
                     )}
 
                 </div>
@@ -554,20 +580,22 @@ export const Backlog = (): React.ReactElement => {
 
                 <div
                     className="flex items-center px-3 h-10 border-r border-slate-100 cursor-pointer relative hover:bg-slate-50/50 transition-colors group/edit"
-                    onClick={(e) => { e.stopPropagation(); startEditing(issue.id, 'status', issue.status); }}
+                    onClick={(e) => { e.stopPropagation(); startEditing(e, issue.id, 'status', issue.status); }}
                 >
 
                     <span className={statusOptions.find(o => o.value === issue.status)?.class || statusOptions[0].class}>
                         {issue.status.replace('_', ' ')}
                     </span>
-                    {editingField?.id === issue.id && editingField.field === 'status' && (
+                    {editingField?.id === issue.id && editingField.field === 'status' && triggerRect && createPortal(
                         <div
-                            className="absolute left-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-[100] py-1 min-w-[160px] transform animate-in fade-in zoom-in duration-100"
+                            className="fixed bg-white border border-slate-200 rounded-lg shadow-xl z-[9999] py-1 min-w-[160px] transform animate-in fade-in zoom-in duration-100"
+                            style={{ 
+                                top: triggerRect.bottom + 4, 
+                                left: triggerRect.left 
+                            }}
                             onClick={(e) => e.stopPropagation()}
                             data-active-editor="true"
                         >
-
-
                             {statusOptions.map(opt => (
                                 <div
                                     key={opt.value}
@@ -580,15 +608,15 @@ export const Backlog = (): React.ReactElement => {
                                     {issue.status === opt.value && <span className="material-symbols-outlined text-[16px] text-blue-600 ml-auto font-bold px-1">check</span>}
                                 </div>
                             ))}
-
-                        </div>
+                        </div>,
+                        document.body
                     )}
 
                 </div>
 
                 <div
                     className="flex items-center justify-center h-10 border-r border-slate-100 cursor-pointer relative hover:bg-slate-50/50 transition-colors group/edit"
-                    onClick={(e) => { e.stopPropagation(); startEditing(issue.id, 'priority', issue.priority); }}
+                    onClick={(e) => { e.stopPropagation(); startEditing(e, issue.id, 'priority', issue.priority); }}
                 >
 
                     <span
@@ -597,9 +625,13 @@ export const Backlog = (): React.ReactElement => {
                     >
                         {getPriorityIcon(issue.priority).icon}
                     </span>
-                    {editingField?.id === issue.id && editingField.field === 'priority' && (
+                    {editingField?.id === issue.id && editingField.field === 'priority' && triggerRect && createPortal(
                         <div
-                            className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-[100] py-1 min-w-[140px] transform animate-in fade-in zoom-in duration-100"
+                            className="fixed bg-white border border-slate-200 rounded-lg shadow-xl z-[9999] py-1 min-w-[140px] transform animate-in fade-in zoom-in duration-100"
+                            style={{ 
+                                top: triggerRect.bottom + 4, 
+                                left: triggerRect.left - 70 // Offset to center better under small icon
+                            }}
                             onClick={(e) => e.stopPropagation()}
                             data-active-editor="true"
                         >
@@ -618,7 +650,8 @@ export const Backlog = (): React.ReactElement => {
                                     {issue.priority === opt.value && <span className="material-symbols-outlined text-[16px] text-blue-600 ml-auto font-bold">check</span>}
                                 </div>
                             ))}
-                        </div>
+                        </div>,
+                        document.body
                     )}
 
                 </div>
@@ -626,7 +659,7 @@ export const Backlog = (): React.ReactElement => {
 
                 <div
                     className="flex items-center justify-center h-10 cursor-pointer relative hover:bg-slate-50/50 transition-colors group/edit"
-                    onClick={(e) => { e.stopPropagation(); startEditing(issue.id, 'assignee', issue.assigneeId); }}
+                    onClick={(e) => { e.stopPropagation(); startEditing(e, issue.id, 'assignee', issue.assigneeId); }}
                 >
 
                     {issue.assigneeName ? (
@@ -642,12 +675,15 @@ export const Backlog = (): React.ReactElement => {
                             ?
                         </div>
                     )}
-                    {editingField?.id === issue.id && editingField.field === 'assignee' && (
+                    {editingField?.id === issue.id && editingField.field === 'assignee' && triggerRect && createPortal(
                         <div
-                            className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-[100] w-[220px] transform animate-in fade-in zoom-in duration-100 flex flex-col"
+                            className="fixed bg-white border border-slate-200 rounded-lg shadow-xl z-[9999] w-[220px] transform animate-in fade-in zoom-in duration-100 flex flex-col"
+                            style={{ 
+                                top: triggerRect.bottom + 4, 
+                                left: triggerRect.left - 150 
+                            }}
                             onClick={(e) => e.stopPropagation()}
                         >
-
                             <div className="px-3 py-2 border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold text-slate-500">Assign To</div>
                             <div className="max-h-56 overflow-y-auto px-1 py-1 custom-scrollbar" data-active-editor="true">
                                 <div
@@ -663,8 +699,6 @@ export const Backlog = (): React.ReactElement => {
                                     <div className="px-3 py-4 text-center text-slate-400 text-[11px]">No members found</div>
                                 )}
                                 {[...(project?.leads || []), ...(project?.members || [])].map((member: IProjectMember) => (
-
-
                                     <div
                                         key={member.id}
                                         onClick={() => handleFieldEdit(issue.id, 'assigneeId', member.id)}
@@ -683,11 +717,11 @@ export const Backlog = (): React.ReactElement => {
                                         {issue.assigneeId?.toString() === member.id.toString() && (
                                             <span className="material-symbols-outlined text-[16px] text-blue-600 ml-auto font-bold">check</span>
                                         )}
-
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </div>,
+                        document.body
                     )}
                 </div>
             </div>
@@ -771,7 +805,7 @@ export const Backlog = (): React.ReactElement => {
                         {hierarchyRows.length === 0 ? (
                             <div className="py-12 text-center text-slate-400 text-[13px]">No issues found matching your filters</div>
                         ) : (
-                            hierarchyRows.map(({ issue, depth, hasChildren }) => renderIssueRow(issue, depth, hasChildren))
+                            hierarchyRows.map(({ issue, depth, hasChildren }, idx) => renderIssueRow(issue, idx, hierarchyRows.length, depth, hasChildren))
                         )}
                     </div>
                 </div>
@@ -848,12 +882,12 @@ export const Backlog = (): React.ReactElement => {
                                 </div>
                             </div>
                             {!isCollapsed && (
-                                <>
+                                <div className="overflow-x-auto custom-scrollbar">
                                     {renderTableHeader()}
                                     <div className="flex flex-col">
-                                        {groupIssues.map(issue => renderIssueRow(issue))}
+                                        {groupIssues.map((issue, idx) => renderIssueRow(issue, idx, groupIssues.length))}
                                     </div>
-                                </>
+                                </div>
                             )}
                         </div>
                     );

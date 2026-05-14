@@ -109,22 +109,22 @@ export const ReportDetailsModal = ({ isOpen, onClose, projectId, report, reportT
     const renderIssueRow = (issue: IIssue) => {
         const theme = getIssueTheme(issue.type)
         return (
-            <div key={issue.id} className="group flex items-center justify-between p-4 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-all bg-white min-w-0">
+            <div key={issue.id} className="group flex items-center justify-between p-4 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-all bg-white min-w-0 gap-4">
                 <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <div className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-xl ${theme.bgColor} border border-slate-100`}>
-                        <span className={`material-symbols-outlined text-[20px] ${theme.color}`}>{theme.icon}</span>
+                    <div className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-xl ${theme.bgColor} border border-slate-100 overflow-visible`}>
+                        <span className={`material-symbols-outlined text-[20px] ${theme.color} flex items-center justify-center leading-none`}>{theme.icon}</span>
                     </div>
-                    <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[11px] font-black text-slate-400 tracking-wider hover:text-indigo-600 transition-colors cursor-pointer">{issue.issueKey}</span>
-                            <span className="text-[14px] font-bold text-slate-800 truncate">{issue.title}</span>
+                    <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1 min-w-0">
+                            <span className="text-[10px] md:text-[11px] font-black text-slate-400 tracking-wider shrink-0 uppercase">{issue.issueKey}</span>
+                            <span className="text-[13px] md:text-[14px] font-bold text-slate-800 truncate" title={issue.title}>{issue.title}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 shrink-0">
                                 {issue.status.replace('_', ' ')}
                             </span>
                             {issue.endDate && (
-                                <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+                                <span className="text-[10px] md:text-[11px] text-slate-400 font-medium flex items-center gap-1 truncate">
                                     <span className="material-symbols-outlined text-[14px]">calendar_today</span>
                                     {new Date(issue.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                 </span>
@@ -132,23 +132,24 @@ export const ReportDetailsModal = ({ isOpen, onClose, projectId, report, reportT
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 ml-4">
+                <div className="flex items-center gap-3 shrink-0">
                     {issue.assigneeName ? (
                         <div className="flex items-center gap-2">
-                            <div className="text-[11px] font-bold text-slate-600 truncate max-w-[100px] text-right">
+                            <div className="hidden sm:block text-[11px] font-bold text-slate-500 truncate max-w-[80px] text-right" title={issue.assigneeName}>
                                 {issue.assigneeName}
                             </div>
                             <div 
-                                className="w-8 h-8 rounded-full text-white flex items-center justify-center text-[11px] font-black shadow-sm ring-2 ring-white"
+                                className="w-8 h-8 rounded-full text-white flex items-center justify-center text-[11px] font-black shadow-sm ring-2 ring-white shrink-0"
                                 style={{ backgroundColor: issue.assigneeEmail ? getAvatarColor(issue.assigneeEmail) : '#cbd5e1' }}
+                                title={issue.assigneeName}
                             >
                                 {issue.assigneeName.charAt(0).toUpperCase()}
                             </div>
                         </div>
                     ) : (
                         <div className="flex items-center gap-2">
-                            <div className="text-[11px] font-bold text-slate-400 italic text-right">Unassigned</div>
-                            <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-[11px] font-black shadow-sm ring-2 ring-white">
+                            <div className="hidden sm:block text-[11px] font-bold text-slate-400 italic text-right">Unassigned</div>
+                            <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-[11px] font-black shadow-sm ring-2 ring-white shrink-0">
                                 ?
                             </div>
                         </div>
@@ -159,24 +160,23 @@ export const ReportDetailsModal = ({ isOpen, onClose, projectId, report, reportT
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm font-inter">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm font-inter animate-in fade-in duration-300">
             <div 
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200"
+                className="bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20"
                 role="dialog"
                 aria-modal="true"
             >
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-slate-100 shrink-0 bg-slate-50/50">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl ${headerTheme.colorBg} flex items-center justify-center`}>
-                            <span className={`material-symbols-outlined text-[24px] ${headerTheme.colorText}`}>
+                <div className="p-4 md:p-6 flex items-center justify-between border-b border-slate-200 bg-white shrink-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className={`w-10 h-10 rounded-xl ${headerTheme.colorBg} flex items-center justify-center shrink-0`}>
+                            <span className={`material-symbols-outlined text-[24px] ${headerTheme.colorText} leading-none`}>
                                 {headerTheme.icon}
                             </span>
                         </div>
-                        <div>
+                        <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                                <h2 className="text-xl font-bold text-slate-800 tracking-tight">{getTitle()}</h2>
-
+                                <h2 className="text-xl font-black text-slate-800 tracking-tight truncate">{getTitle()}</h2>
                             </div>
                             <p className="text-[12px] text-slate-500 font-medium">
                                 {reportType === 'messages' 
@@ -202,12 +202,13 @@ export const ReportDetailsModal = ({ isOpen, onClose, projectId, report, reportT
                         <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
                             {reportType === 'messages' ? (
                                 messages.length > 0 ? (
-                                    <div className="p-6">
+                                    <div className="p-4 md:p-6 space-y-2">
                                         {messages.map(msg => (
                                             <ChatMessage 
                                                 key={msg.id} 
                                                 message={msg} 
-                                                isMe={false} // We don't have current user context here, but true/false is just styling
+                                                isMe={false}
+                                                compact={true}
                                             />
                                         ))}
                                     </div>

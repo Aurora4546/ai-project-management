@@ -411,7 +411,7 @@ export const Layout = ({ children, projectContextName = 'Project Name', onUnread
             <div className="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
                 {/* Mobile Top Bar — only visible on mobile */}
                 <header className="h-16 bg-white flex items-center justify-between px-3 border-b border-slate-200/60 shadow-sm z-30 md:hidden safe-top">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                         <button
                             onClick={() => setIsMobileMenuOpen(true)}
                             className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -419,7 +419,9 @@ export const Layout = ({ children, projectContextName = 'Project Name', onUnread
                         >
                             <span className="material-symbols-outlined text-[24px]">menu</span>
                         </button>
-                        <h2 className="text-[15px] font-black text-slate-800 tracking-tight truncate max-w-[180px]">{projectData?.name || projectContextName}</h2>
+                        <h2 className="text-[15px] font-black text-slate-800 tracking-tight truncate flex-1 min-w-0" title={projectData?.name || projectContextName}>
+                            {projectData?.name || projectContextName}
+                        </h2>
                     </div>
                     <div className="flex items-center gap-1">
                         {notificationDropdown}
@@ -437,8 +439,10 @@ export const Layout = ({ children, projectContextName = 'Project Name', onUnread
 
                 {/* Desktop Top Navbar — hidden on mobile */}
                 <header className="h-16 bg-white hidden md:flex items-center justify-between px-8 border-b border-slate-200/80 shadow-sm z-40">
-                    <div className="flex items-center gap-3">
-                        <h2 className="text-[16px] font-bold text-slate-800 tracking-tight">{projectData?.name || projectContextName}</h2>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <h2 className="text-[16px] font-bold text-slate-800 tracking-tight truncate max-w-[300px]" title={projectData?.name || projectContextName}>
+                            {projectData?.name || projectContextName}
+                        </h2>
                         <div className="w-px h-4 bg-slate-200 mx-2"></div>
                         <GlobalSearch />
                     </div>

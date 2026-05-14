@@ -295,7 +295,7 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm font-inter">
             <div 
-                className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] md:max-h-[90vh] h-fit flex flex-col overflow-hidden"
+                className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden"
                 role="dialog"
                 aria-modal="true"
             >
@@ -307,8 +307,9 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                     </button>
                 </div>
 
-                {/* Body */}
-                <div className="p-4 md:px-8 md:py-4 flex flex-col gap-6 overflow-y-auto custom-scrollbar flex-initial min-h-0">
+                {/* Body - Scrollable */}
+                <div className="p-8 flex-1 overflow-y-auto custom-scrollbar bg-white">
+                    <div className="flex flex-col gap-8">
                     
                     <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                         <div className="w-full md:w-1/2">
@@ -492,16 +493,23 @@ export const CreateIssueModal = ({ isOpen, onClose, projectId }: CreateIssueModa
                             onChange={setLabels}
                         />
                     </div>
+                    </div>
                 </div>
 
-                <div className="px-8 py-3 border-t border-slate-100 flex justify-end items-center gap-4 bg-white shrink-0">
-                    <button onClick={onClose} className="px-4 py-2 text-[13px] font-bold text-slate-600 hover:text-slate-800 transition-colors">Cancel</button>
+                {/* Footer - Fixed */}
+                <div className="px-8 py-4 border-t border-slate-100 flex justify-end items-center gap-4 bg-white shrink-0">
+                    <button 
+                        onClick={onClose} 
+                        className="px-6 py-2.5 text-[14px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all"
+                    >
+                        Cancel
+                    </button>
                     <button 
                         onClick={handleCreate}
                         disabled={isLoading || !title.trim()}
-                        className="px-6 py-2 bg-[#1A202C] text-white rounded-md text-[13px] font-bold shadow-sm hover:bg-slate-800 transition-colors disabled:opacity-50"
+                        className="px-10 py-2.5 bg-[#1A202C] text-white rounded-lg text-[14px] font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 hover:translate-y-[-1px] active:translate-y-[0px] active:scale-95 transition-all disabled:opacity-50"
                     >
-                        {isLoading ? 'Creating...' : 'Create'}
+                        {isLoading ? 'Creating...' : 'Create Issue'}
                     </button>
                 </div>
             </div>

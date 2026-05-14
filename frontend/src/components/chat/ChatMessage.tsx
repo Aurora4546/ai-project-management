@@ -14,6 +14,7 @@ interface ChatMessageProps {
     onUpdate?: (messageId: string, content: string) => void
     onDelete?: (messageId: string) => void
     onIssueClick?: (issueId: string) => void
+    compact?: boolean
 }
 
 export const ChatMessage = ({ 
@@ -23,7 +24,8 @@ export const ChatMessage = ({
     members = [],
     onUpdate, 
     onDelete,
-    onIssueClick
+    onIssueClick,
+    compact = false
 }: ChatMessageProps): React.ReactElement => {
     const navigate = useNavigate()
     const [isEditing, setIsEditing] = React.useState(false)
@@ -31,6 +33,8 @@ export const ChatMessage = ({
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false)
     const [imgRetries, setImgRetries] = React.useState<Record<string, number>>({})
     const [activePreviewFile, setActivePreviewFile] = React.useState<IChatAttachment | null>(null)
+    const [showMobileActions, setShowMobileActions] = React.useState(false)
+    const longPressTimer = React.useRef<any>(null)
     
     const handleUpdate = () => {
         if (editContent.trim() && editContent !== message.content) {
@@ -54,6 +58,25 @@ export const ChatMessage = ({
     const handleConfirmDelete = () => {
         onDelete?.(message.id)
         setIsDeleteModalOpen(false)
+        setShowMobileActions(false)
+    }
+
+    const handleTouchStart = () => {
+        longPressTimer.current = setTimeout(() => {
+            setShowMobileActions(true)
+        }, 500)
+    }
+
+    const handleTouchEnd = () => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current)
+        }
+    }
+
+    const handleTouchMove = () => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current)
+        }
     }
 
     const getFullUrl = (url: string) => {
@@ -86,8 +109,8 @@ export const ChatMessage = ({
         (message.messageType === 'FILE' && hasActualText)
 
     return (
-        <div className={`flex w-full mb-8 px-6 group animate-in fade-in slide-in-from-bottom-3 ${isMe ? 'justify-end' : 'justify-start'}`}>
-            <div className={`flex gap-3 max-w-[80%] ${isMe ? 'flex-row-reverse' : 'flex-row'} items-start`}>
+        <div className={`flex w-full group animate-in fade-in slide-in-from-bottom-3 ${isMe ? 'justify-end' : 'justify-start'} ${compact ? 'mb-4 px-0' : 'mb-8 px-6'}`}>
+            <div className={`flex gap-3 ${compact ? 'max-w-full' : 'max-w-[80%]'} ${isMe ? 'flex-row-reverse' : 'flex-row'} items-start`}>
                 {/* Avatar with Shadow and Border */}
                 <div className="shrink-0 mt-0.5">
                     <div 
@@ -120,9 +143,13 @@ export const ChatMessage = ({
                                     isMe 
                                     ? 'bg-indigo-50/80 text-indigo-900 border-indigo-100/50 backdrop-blur-sm rounded-tr-none selection:bg-indigo-200' 
                                     : 'bg-white text-slate-800 border-slate-200 rounded-tl-none selection:bg-blue-100'
-                                }`}>
+                                } cursor-default active:bg-slate-50/50 transition-colors select-none`}
+                                onTouchStart={handleTouchStart}
+                                onTouchEnd={handleTouchEnd}
+                                onTouchMove={handleTouchMove}
+                                >
                                     {isEditing ? (
-                                        <div className="flex flex-col gap-3 min-w-[320px] py-1">
+                                        <div className={`flex flex-col gap-3 w-full max-w-full py-1 ${compact ? 'min-w-0' : 'min-w-[280px] sm:min-w-[320px]'}`}>
                                             <textarea
                                                 autoFocus
                                                 value={editContent}
@@ -163,11 +190,11 @@ export const ChatMessage = ({
                                                     ? message.attachments.some(a => a.fileType?.toLowerCase().startsWith('image/'))
                                                         ? null 
                                                         : <div className={`flex items-center gap-2 ${isMe ? 'text-indigo-400' : 'text-slate-400'}`}>
-                                                            <span className="material-symbols-outlined text-[18px]">attach_file</span>
+                                                            <span className="material-symbols-outlined text-[18px] flex items-center justify-center leading-none">attach_file</span>
                                                             <span className="italic text-[12px] font-bold">Shared a file</span>
                                                           </div>
                                                     : <div className="flex items-center gap-2 text-slate-400 animate-pulse">
-                                                        <span className="material-symbols-outlined text-[18px]">sync</span>
+                                                        <span className="material-symbols-outlined text-[18px] flex items-center justify-center leading-none">sync</span>
                                                         <span className="italic text-[12px] font-bold">Uploading file...</span>
                                                       </div>
                                                 : renderFormattedContent(message.content, { members, issues, isMe, navigate, onIssueClick })
@@ -186,11 +213,11 @@ export const ChatMessage = ({
                                         
                                         if (isImage) {
                                             return (
-                                                <div key={att.id} className="relative group/img overflow-hidden rounded-2xl border-2 border-white shadow-lg bg-slate-100 aspect-video ring-1 ring-slate-200">
+                                                <div key={att.id} className="relative group/img overflow-hidden rounded-2xl border-2 border-white shadow-lg bg-slate-100 ring-1 ring-slate-200 inline-block w-auto max-w-full">
                                                     <img 
                                                         src={`${downloadUrl}${imgRetries[att.id] ? `?retry=${imgRetries[att.id]}` : ''}`} 
                                                         alt={att.fileName} 
-                                                        className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-1000 cursor-zoom-in"
+                                                        className="w-auto max-w-full max-h-[450px] object-contain group-hover/img:scale-105 transition-transform duration-700 cursor-zoom-in block"
                                                         onClick={() => setActivePreviewFile(att)}
                                                         onError={() => {
                                                             const retries = imgRetries[att.id] || 0;
@@ -250,23 +277,40 @@ export const ChatMessage = ({
                             )}
                         </div>
 
-                        {/* Actions that appear on hover */}
+                        {/* Actions that appear on hover (Desktop) or long-press (Mobile) */}
                         {isMe && !isEditing && (
-                            <div className="flex flex-col gap-1 opacity-0 group-hover/message:opacity-100 transition-all duration-200 translate-y-1 group-hover/message:translate-y-0">
+                            <div className={`flex flex-col gap-1 transition-all duration-200 
+                                ${showMobileActions ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 group-hover/message:opacity-100 group-hover/message:translate-y-0'}
+                            `}>
                                 <button 
-                                    onClick={() => setIsEditing(true)}
+                                    onClick={() => {
+                                        setIsEditing(true)
+                                        setShowMobileActions(false)
+                                    }}
                                     className="w-7 h-7 rounded-lg flex items-center justify-center bg-white border border-slate-100 text-slate-400 hover:text-blue-600 hover:border-blue-200 shadow-md transition-all active:scale-90"
                                     title="Edit"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">edit</span>
                                 </button>
                                 <button 
-                                    onClick={handleDelete}
+                                    onClick={() => {
+                                        handleDelete()
+                                        // Modal handles closing, but we can hide buttons
+                                    }}
                                     className="w-7 h-7 rounded-lg flex items-center justify-center bg-white border border-slate-100 text-slate-400 hover:text-rose-600 hover:border-rose-200 shadow-md transition-all active:scale-90"
                                     title="Delete"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">delete</span>
                                 </button>
+                                {showMobileActions && (
+                                    <button 
+                                        onClick={() => setShowMobileActions(false)}
+                                        className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 border border-slate-200 text-slate-400 hover:text-slate-600 shadow-sm transition-all active:scale-90 md:hidden"
+                                        title="Close"
+                                    >
+                                        <span className="material-symbols-outlined text-[14px]">close</span>
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>

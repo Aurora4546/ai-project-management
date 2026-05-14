@@ -350,8 +350,9 @@ export const Reports = (): React.ReactElement => {
         <div className="flex-1 overflow-y-auto pt-6 px-4 md:p-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="text-[11px] font-bold text-slate-400 tracking-[0.1em] mb-3 uppercase">
-              PROJECTS / {report?.projectName || 'Reports'}
+            <div className="text-[11px] font-bold text-slate-400 tracking-[0.1em] mb-3 uppercase flex items-center gap-2 min-w-0">
+              <span className="shrink-0">PROJECTS /</span>
+              <span className="truncate" title={report?.projectName}>{report?.projectName || 'Reports'}</span>
             </div>
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
               <div className="flex items-start gap-3 md:gap-4">
@@ -807,8 +808,8 @@ const StatCard = ({ value, label, icon, color, onClick }: StatCardProps) => {
       className={`bg-white rounded-xl border border-slate-200/80 p-4 transition-all duration-300 group ${onClick ? 'cursor-pointer hover:shadow-lg hover:border-slate-300 hover:-translate-y-1' : 'hover:shadow-lg hover:border-slate-300'}`}
     >
       <div className="flex items-center gap-3">
-        <div className={`w-8 h-8 flex-shrink-0 ${accent.bg} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform`}>
-          <span className={`material-symbols-outlined text-[16px] ${accent.icon}`}>{icon}</span>
+        <div className={`w-8 h-8 flex-shrink-0 ${accent.bg} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform overflow-visible`}>
+          <span className={`material-symbols-outlined text-[16px] ${accent.icon} flex items-center justify-center leading-none`}>{icon}</span>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-2xl font-black text-slate-800 tracking-tight leading-none">{value.toLocaleString()}</p>
