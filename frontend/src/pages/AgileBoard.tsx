@@ -11,6 +11,7 @@ import { GenericDropdown } from '../components/GenericDropdown'
 import { useToast } from '../context/ToastContext'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import type { DropResult } from '@hello-pangea/dnd'
+import { createPortal } from 'react-dom'
 
 
 
@@ -25,6 +26,7 @@ export const AgileBoard = (): React.ReactElement => {
     const [projectLabels, setProjectLabels] = useState<ILabel[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [projectName, setProjectName] = useState('Project')
+    const [isDragging, setIsDragging] = useState(false)
 
     // Filtering & Grouping State
     const [searchQuery, setSearchQuery] = useState('')
@@ -103,7 +105,12 @@ export const AgileBoard = (): React.ReactElement => {
         }
     }, [searchParams, issues]);
 
+    const onDragStart = () => {
+        setIsDragging(true);
+    };
+
     const onDragEnd = async (result: DropResult) => {
+        setIsDragging(false);
         const { destination, source, draggableId } = result;
 
         if (!destination) return;
@@ -297,14 +304,18 @@ export const AgileBoard = (): React.ReactElement => {
         const { icon, color } = getIssueIcon(issue.type);
         return (
             <Draggable draggableId={issue.id.toString()} index={index} key={issue.id.toString()}>
-                {(provided: any, snapshot: any) => (
+                {(provided: any, snapshot: any) => {
+                    const content = (
                     <div 
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                         onClick={() => handleTaskClick(issue)}
-                        className={`bg-white p-4 rounded-lg shadow-sm border transition-all cursor-pointer group ${snapshot.isDragging ? 'border-blue-400 shadow-md ring-1 ring-blue-400 opacity-[0.95]' : 'border-slate-200/80 hover:shadow-md hover:border-slate-300'}`}
-                        style={{ ...provided.draggableProps.style }}
+                        className={`bg-white p-4 rounded-lg shadow-sm border transition-all cursor-pointer group ${snapshot.isDragging ? 'border-blue-400 shadow-md ring-1 ring-blue-400 opacity-[0.95] z-[9999]' : 'border-slate-200/80 hover:shadow-md hover:border-slate-300'}`}
+                        style={{ 
+                            ...provided.draggableProps.style,
+                            touchAction: 'none'
+                        }}
                     >
                 {/* Row 1: Issue ID + Epic Tag + Actions */}
                 <div className="flex items-center justify-between mb-1.5 relative">
@@ -411,15 +422,21 @@ export const AgileBoard = (): React.ReactElement => {
                     </div>
                 </div>
             </div>
-            )}
-        </Draggable>
-        );
-    };
+            )
+
+            if (snapshot.isDragging) {
+                return createPortal(content, document.body)
+            }
+            return content
+        }}
+    </Draggable>
+    );
+};
 
     const renderBoardContent = () => {
         if (groupBy === 'NONE') {
             return (
-            <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 items-start flex-1 min-h-0 snap-x snap-mandatory md:snap-none">
+            <div className={`flex gap-4 md:gap-6 overflow-x-auto pb-4 items-start flex-1 min-h-0 md:snap-none ${isDragging ? '' : 'snap-x snap-mandatory'}`}>
                 {columns.map(col => {
                     const colIssues = filteredIssues.filter(i => i.status === col.status.toUpperCase());
                     return (
@@ -498,7 +515,7 @@ export const AgileBoard = (): React.ReactElement => {
                                 )}
                             </div>
                             
-                            <div className="flex gap-4 p-4 overflow-x-auto snap-x snap-mandatory md:snap-none items-start">
+                            <div className={`flex gap-4 p-4 overflow-x-auto md:snap-none items-start ${isDragging ? '' : 'snap-x snap-mandatory'}`}>
                                 {columns
                                     .filter(col => groupIssues.some(i => i.status === col.status.toUpperCase()))
                                     .map(col => {
@@ -619,7 +636,15 @@ export const AgileBoard = (): React.ReactElement => {
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                     </div>
                 ) : (
-                    <DragDropContext onDragEnd={onDragEnd}>
+                    <DragDropContext 
+                        onDragEnd={onDragEnd} 
+                        onDragStart={onDragStart}
+                        autoScrollerOptions={{
+                            startFromPercentage: 0.1,
+                            maxScrollAtPercentage: 0.05,
+                            maxPixelScroll: 20
+                        }}
+                    >
                         {renderBoardContent()}
                     </DragDropContext>
                 )}
