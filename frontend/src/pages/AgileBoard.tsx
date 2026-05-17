@@ -11,8 +11,6 @@ import { GenericDropdown } from '../components/GenericDropdown'
 import { useToast } from '../context/ToastContext'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import type { DropResult } from '@hello-pangea/dnd'
-import { createPortal } from 'react-dom'
-
 
 
 export const AgileBoard = (): React.ReactElement => {
@@ -483,9 +481,6 @@ export const AgileBoard = (): React.ReactElement => {
                             </div>
                         </div>
                     );
-                    if (snapshot.isDragging) {
-                        return createPortal(child, document.body);
-                    }
                     return child;
                 }}
             </Draggable>
