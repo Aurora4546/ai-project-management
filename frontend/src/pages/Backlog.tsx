@@ -721,7 +721,7 @@ export const Backlog = (): React.ReactElement => {
     };
 
     const renderTableHeader = () => (
-        <div className="bg-slate-50/50 h-10 border-b border-slate-200 grid gap-0 items-center text-[11px] font-bold text-slate-500 uppercase tracking-wider select-none w-full min-w-max rounded-t-xl" style={{ gridTemplateColumns: gridTemplate }}>
+        <div className="bg-slate-50/50 h-10 border-b border-slate-200 grid gap-0 items-center text-[11px] font-bold text-slate-500 uppercase tracking-wider select-none w-full min-w-max" style={{ gridTemplateColumns: gridTemplate }}>
             <div className="col-span-3 h-full flex items-center px-3 border-r border-slate-200/60 relative">
                 <span className="ml-8">Issue</span>
                 <div onMouseDown={(e) => handleResizeStart(e, 'key')} className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize hover:border-r-2 hover:border-blue-400 z-10 transition-colors" title="Resize Issue Column" />
@@ -791,14 +791,16 @@ export const Backlog = (): React.ReactElement => {
         if (groupBy === 'NONE') {
             const hierarchyRows = buildHierarchy(filteredIssues)
             return (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-8 overflow-x-auto">
-                    {renderTableHeader()}
-                    <div className="flex flex-col">
-                        {hierarchyRows.length === 0 ? (
-                            <div className="py-12 text-center text-slate-400 text-[13px]">No issues found matching your filters</div>
-                        ) : (
-                            hierarchyRows.map(({ issue, depth, hasChildren }, idx) => renderIssueRow(issue, idx, hierarchyRows.length, depth, hasChildren))
-                        )}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm mb-8 overflow-hidden">
+                    <div className="overflow-x-auto custom-scrollbar">
+                        {renderTableHeader()}
+                        <div className="flex flex-col min-w-max">
+                            {hierarchyRows.length === 0 ? (
+                                <div className="py-12 text-center text-slate-400 text-[13px]">No issues found matching your filters</div>
+                            ) : (
+                                hierarchyRows.map(({ issue, depth, hasChildren }, idx) => renderIssueRow(issue, idx, hierarchyRows.length, depth, hasChildren))
+                            )}
+                        </div>
                     </div>
                 </div>
             )
@@ -837,11 +839,11 @@ export const Backlog = (): React.ReactElement => {
                     const isCollapsed = collapsedGroups.has(groupName);
 
                     return (
-                        <div key={groupName} className="bg-white rounded-xl border border-slate-200 shadow-sm mb-4">
+                        <div key={groupName} className="bg-white rounded-xl border border-slate-200 shadow-sm mb-4 overflow-hidden">
 
                             <div
                                 onClick={() => toggleGroup(groupName)}
-                                className={`px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors ${isCollapsed ? 'rounded-xl border-b-0' : 'rounded-t-xl'}`}
+                                className={`px-5 py-3 bg-slate-50 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors ${!isCollapsed ? 'border-b border-slate-200' : ''}`}
                             >
                                 <div className="flex items-center gap-3">
                                     <span className={`material-symbols-outlined text-[20px] text-slate-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}>expand_more</span>
@@ -876,7 +878,7 @@ export const Backlog = (): React.ReactElement => {
                             {!isCollapsed && (
                                 <div className="overflow-x-auto custom-scrollbar">
                                     {renderTableHeader()}
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col min-w-max">
                                         {groupIssues.map((issue, idx) => renderIssueRow(issue, idx, groupIssues.length))}
                                     </div>
                                 </div>
