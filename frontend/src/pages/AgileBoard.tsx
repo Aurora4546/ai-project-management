@@ -5,14 +5,15 @@ import { CreateIssueModal } from '../components/CreateIssueModal'
 import { UpdateIssueModal } from '../components/UpdateIssueModal'
 import { DeleteConfirmModal } from '../components/DeleteConfirmModal'
 import * as api from '../services/api'
-import type { IIssue, ILabel, GroupBy, FilterState } from '../types'
+import type { IIssue, ILabel, FilterState } from '../types'
 import { getAvatarColor, getIssueTheme } from '../utils'
 import { GenericDropdown } from '../components/GenericDropdown'
+import { ScrollableFilterBar } from '../components/ScrollableFilterBar'
+import { GroupByDropdown } from '../components/GroupByDropdown'
+import type { GroupByOption } from '../components/GroupByDropdown'
 import { useToast } from '../context/ToastContext'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import type { DropResult } from '@hello-pangea/dnd'
-
-
 export const AgileBoard = (): React.ReactElement => {
     const { id: projectId } = useParams<{ id: string }>()
     const { showToast } = useToast()
@@ -27,8 +28,7 @@ export const AgileBoard = (): React.ReactElement => {
 
     // Filtering & Grouping State
     const [searchQuery, setSearchQuery] = useState('')
-    const [groupBy, setGroupBy] = useState<GroupBy>('NONE')
-    const [isGroupOpen, setIsGroupOpen] = useState(false)
+    const [groupBy, setGroupBy] = useState<GroupByOption>('NONE')
     const [filters, setFilters] = useState<FilterState>({
         types: [], assignees: [], epics: [], labels: [], priorities: [], statuses: []
     })
@@ -100,12 +100,10 @@ export const AgileBoard = (): React.ReactElement => {
         };
     }, [isBoardDragging]);
 
-    const groupRef = useRef<HTMLDivElement>(null)
     const issueOptionsRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (groupRef.current && !groupRef.current.contains(event.target as Node)) setIsGroupOpen(false);
             if (issueOptionsRef.current && !issueOptionsRef.current.contains(event.target as Node)) setActiveDropdownId(null);
         }
         document.addEventListener('mousedown', handleClickOutside);
@@ -635,35 +633,15 @@ export const AgileBoard = (): React.ReactElement => {
                         </button>
                     </div>
 
-                    {/* Grouping and Filters Row - Centered Wrap for mobile */}
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                        <div className="relative shrink-0" ref={groupRef}>
-                            <button
-                                onClick={() => setIsGroupOpen(!isGroupOpen)}
-                                className={`flex items-center gap-2 px-3 py-2 bg-white border rounded-md text-[13px] font-medium transition-colors shadow-sm h-[38px] ${groupBy !== 'NONE'
-                                        ? 'border-blue-400 text-blue-700 bg-blue-50/30'
-                                        : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                                    }`}
-                            >
-                                <span className="material-symbols-outlined text-[16px] text-slate-400">view_agenda</span>
-                                {groupBy === 'NONE' ? 'Group' : `Group: ${groupBy === 'ASSIGNEE' ? 'Assignee' : 'Epic'}`}
-                            </button>
-                            {isGroupOpen && (
-                                <div className="absolute top-full left-0 mt-1 w-44 bg-white border border-slate-200 rounded-md shadow-xl py-1 z-50">
-                                    {(['NONE', 'ASSIGNEE', 'EPIC'] as GroupBy[]).map(g => (
-                                        <button
-                                            key={g}
-                                            onClick={() => { setGroupBy(g); setIsGroupOpen(false); }}
-                                            className={`w-full text-left px-3 py-2.5 text-[13px] hover:bg-slate-50 ${groupBy === g ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-700'}`}
-                                        >
-                                            {g === 'NONE' ? 'None' : g === 'ASSIGNEE' ? 'Assignee' : 'Epic'}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                    {/* Grouping and Filters Row - Scrollable for mobile */}
+                    <ScrollableFilterBar>
+                        <GroupByDropdown 
+                            groupBy={groupBy} 
+                            setGroupBy={setGroupBy as any} 
+                            options={['NONE', 'ASSIGNEE', 'EPIC']} 
+                        />
 
-                        <div className="hidden md:block w-px h-6 bg-slate-200 mx-1"></div>
+                        <div className="hidden md:block w-px h-6 bg-slate-200 mx-1 shrink-0"></div>
 
                         <GenericDropdown label="Parent" options={options.epics} selected={filters.epics} onToggle={(v) => toggleFilter('epics', v)} />
                         <GenericDropdown label="Assignee" options={options.assignees} selected={filters.assignees} onToggle={(v) => toggleFilter('assignees', v)} />
@@ -675,12 +653,12 @@ export const AgileBoard = (): React.ReactElement => {
                         {hasActiveFilters && (
                             <button
                                 onClick={clearFilters}
-                                className="text-[12px] text-slate-500 hover:text-blue-600 font-semibold px-2 py-1.5 hover:bg-slate-50 rounded transition-colors"
+                                className="text-[12px] text-slate-500 hover:text-blue-600 font-semibold px-2 py-1.5 hover:bg-slate-50 rounded transition-colors shrink-0"
                             >
                                 Clear all
                             </button>
                         )}
-                    </div>
+                    </ScrollableFilterBar>
                 </div>
 
 
