@@ -40,7 +40,7 @@ const formatMapToChartData = (map: Record<string, number>) =>
   }))
 
 const formatLabel = (key: string) =>
-  key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  key.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 
 // ── Custom Tooltip ─────────────────────────────────
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -833,18 +833,31 @@ const NarrativeCard = ({ title, content, icon, accentColor }: NarrativeCardProps
   const renderMarkdownContent = (text: string) => {
     if (!text) return <p className="text-slate-400 italic text-[13px]">No data available.</p>
 
-    // Normalize: collapse multiple blank lines into one, trim each line
-    const rawLines = text.split('\n')
-    const lines: string[] = []
+    // Preprocess: clean up raw status enums
+    const cleanedText = text
+      .replace(/(?<![a-zA-Z0-9])IN[_-]PROGRESS(?![a-zA-Z0-9])/gi, 'In Progress')
+      .replace(/(?<![a-zA-Z0-9])IN PROGRESS(?![a-zA-Z0-9])/gi, 'In Progress')
+      .replace(/(?<![a-zA-Z0-9])IN[_-]REVIEW(?![a-zA-Z0-9])/gi, 'In Review')
+      .replace(/(?<![a-zA-Z0-9])IN REVIEW(?![a-zA-Z0-9])/gi, 'In Review')
+      .replace(/(?<![a-zA-Z0-9])TODO(?![a-zA-Z0-9])/gi, 'To Do')
+      .replace(/(?<![a-zA-Z0-9])DONE(?![a-zA-Z0-9])/gi, 'Done')
+
+    // Normalize: collapse multiple blank lines into one, identify leading space indentation
+    const rawLines = cleanedText.split('\n')
+    const lines: { text: string; indent: number }[] = []
     let lastWasEmpty = false
     for (const raw of rawLines) {
       const trimmed = raw.trim()
       if (!trimmed) {
-        if (!lastWasEmpty && lines.length > 0) lastWasEmpty = true
+        if (!lastWasEmpty && lines.length > 0) {
+          lines.push({ text: '', indent: 0 })
+          lastWasEmpty = true
+        }
         continue
       }
-      if (lastWasEmpty) lines.push('')
-      lines.push(trimmed)
+      // Count leading spaces of the raw line to determine nesting level
+      const leadingSpaces = raw.match(/^(\s*)/)?.[0].length || 0
+      lines.push({ text: trimmed, indent: leadingSpaces })
       lastWasEmpty = false
     }
 
@@ -855,7 +868,7 @@ const NarrativeCard = ({ title, content, icon, accentColor }: NarrativeCardProps
     const flushList = () => {
       if (listItems.length > 0) {
         elements.push(
-          <ul key={key++} className="space-y-1 my-1">
+          <ul key={key++} className="space-y-1.5 my-2">
             {listItems}
           </ul>
         )
@@ -897,18 +910,18 @@ const NarrativeCard = ({ title, content, icon, accentColor }: NarrativeCardProps
 
     for (const line of lines) {
       // Spacer between groups (from collapsed blank lines)
-      if (!line) {
+      if (!line.text) {
         flushList()
         continue
       }
 
       // Headers (### or ##) — render as a small bold label
-      const headerMatch = line.match(/^(#{1,3})\s+(.+)/)
+      const headerMatch = line.text.match(/^(#{1,3})\s+(.+)/)
       if (headerMatch) {
         flushList()
         const headerText = headerMatch[2].replace(/\*\*/g, '')
         elements.push(
-          <p key={key++} className="text-[13px] font-bold text-slate-700 mt-2 mb-0.5">
+          <p key={key++} className="text-[13px] font-bold text-slate-700 mt-3 mb-1">
             {headerText}
           </p>
         )
@@ -916,26 +929,42 @@ const NarrativeCard = ({ title, content, icon, accentColor }: NarrativeCardProps
       }
 
       // Bullet list items (-, *, •)
-      const bulletMatch = line.match(/^[-*•]\s+(.+)/)
+      const bulletMatch = line.text.match(/^[-*•]\s+(.+)/)
       if (bulletMatch) {
+        const bulletText = bulletMatch[1]
+        const isNested = line.indent > 0
+        const isDeeplyNested = line.indent >= 4
+
+        // Apply indentation styling
+        const indentClass = isDeeplyNested ? 'pl-8' : (isNested ? 'pl-4' : '')
+        // Custom dot styling for nested lists
+        const dotBg = isNested ? '#94a3b8' : accent.dot
+
         listItems.push(
-          <li key={key++} className="flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed">
-            <span className="mt-[7px] w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: accent.dot }} />
-            <span>{formatInline(bulletMatch[1])}</span>
+          <li key={key++} className={`flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed ${indentClass}`}>
+            <span className="rounded-full shrink-0"
+              style={{ width: isNested ? '4px' : '6px', height: isNested ? '4px' : '6px', marginTop: isNested ? '8px' : '6px', backgroundColor: dotBg }} />
+            <span>{formatInline(bulletText)}</span>
           </li>
         )
         continue
       }
 
       // Numbered list items (1., 2.) — render same as bullets for consistency
-      const numberedMatch = line.match(/^(\d+)[.)]\s+(.+)/)
+      const numberedMatch = line.text.match(/^(\d+)[.)]\s+(.+)/)
       if (numberedMatch) {
+        const numberedText = numberedMatch[2]
+        const isNested = line.indent > 0
+        const isDeeplyNested = line.indent >= 4
+
+        const indentClass = isDeeplyNested ? 'pl-8' : (isNested ? 'pl-4' : '')
+        const dotBg = isNested ? '#94a3b8' : accent.dot
+
         listItems.push(
-          <li key={key++} className="flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed">
-            <span className="mt-[7px] w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: accent.dot }} />
-            <span>{formatInline(numberedMatch[2])}</span>
+          <li key={key++} className={`flex items-start gap-2 text-[13px] text-slate-600 leading-relaxed ${indentClass}`}>
+            <span className="rounded-full shrink-0"
+              style={{ width: isNested ? '4px' : '6px', height: isNested ? '4px' : '6px', marginTop: isNested ? '8px' : '6px', backgroundColor: dotBg }} />
+            <span>{formatInline(numberedText)}</span>
           </li>
         )
         continue
@@ -945,7 +974,7 @@ const NarrativeCard = ({ title, content, icon, accentColor }: NarrativeCardProps
       flushList()
       elements.push(
         <p key={key++} className="text-[13px] text-slate-600 leading-relaxed">
-          {formatInline(line)}
+          {formatInline(line.text)}
         </p>
       )
     }

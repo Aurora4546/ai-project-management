@@ -18,6 +18,10 @@
 - **Chat Styling & Layout Refinements:** Applied global `font-inter` to the chat feature. Resolved AI response text cropping issues in modals.
 - **AI Report Stabilization:** Resolved "Unable to access lob stream" errors and implemented snapshot-based data persistence.
 - **AI Report Delete Confirmation:** Integrated `DeleteConfirmModal` into the `Reports.tsx` page.
+- **AI Report Status Sanitization & Formatting:**
+    - Resolved markdown rendering issues in generated project reports where status labels (like `IN_PROGRESS` or `IN_REVIEW`) appeared in raw/all-caps formatting.
+    - Implemented robust regex sanitizers utilizing case-insensitive search, negative lookbehinds, and negative lookaheads `(?<![a-zA-Z0-9])STATUS(?![a-zA-Z0-9])` to accurately match enums, hyphenated versions, or spaces.
+    - Updated `Reports.tsx` on the frontend and `ReportService.java` on the backend to apply these replacements consistently across both real-time generation and historical database loads.
 - **Issue Card Commenting Refinements:**
     - Resolved the "edited" badge appearing immediately on newly created issue comments by applying a 1-second threshold comparison to timestamps.
     - Restored issue tag navigation by correcting the regex in `UpdateIssueModal.tsx` to properly capture the issue database ID and support dynamic modal switching.

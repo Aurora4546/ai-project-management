@@ -32,6 +32,7 @@
 - **Form Validation:** Enforced character limits for issue titles and descriptions.
 - **Reporting Stability:** Snapshot-based data persistence for historical reports.
 - **AI Report Delete Confirmation:** Integrated confirmation modal.
+- **AI Report Status Sanitization:** Robust case-insensitive regex lookarounds to sanitize and format raw all-caps enums, hyphens, and spaces across UI and API loads.
 - **Issue Card Commenting Refinements:** Premature edited badges resolved and tag-based modal navigation fully operational.
 
 ## What's Left to Build (10-Week Roadmap)

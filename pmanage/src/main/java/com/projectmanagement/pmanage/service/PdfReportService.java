@@ -225,8 +225,29 @@ public class PdfReportService {
     }
 
     private String formatKey(String key) {
-        if (key == null) return "N/A";
-        return key.replace("_", " ").substring(0, 1).toUpperCase() +
-                key.replace("_", " ").substring(1).toLowerCase();
+        if (key == null || key.isBlank()) return "N/A";
+        String upper = key.toUpperCase().trim();
+        switch (upper) {
+            case "IN_REVIEW": return "In Review";
+            case "IN_PROGRESS": return "In Progress";
+            case "TODO": return "To Do";
+            case "DONE": return "Done";
+            default:
+                String normalized = key.toLowerCase().replace("_", " ");
+                StringBuilder sb = new StringBuilder();
+                boolean capitalizeNext = true;
+                for (char c : normalized.toCharArray()) {
+                    if (c == ' ') {
+                        sb.append(c);
+                        capitalizeNext = true;
+                    } else if (capitalizeNext) {
+                        sb.append(Character.toUpperCase(c));
+                        capitalizeNext = false;
+                    } else {
+                        sb.append(c);
+                    }
+                }
+                return sb.toString();
+        }
     }
 }

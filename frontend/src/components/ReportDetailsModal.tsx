@@ -121,7 +121,7 @@ export const ReportDetailsModal = ({ isOpen, onClose, projectId, report, reportT
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 shrink-0">
-                                {issue.status.replace('_', ' ')}
+                                {issue.status.toLowerCase().replace(/_/g, ' ')}
                             </span>
                             {issue.endDate && (
                                 <span className="text-[10px] md:text-[11px] text-slate-400 font-medium flex items-center gap-1 truncate">
