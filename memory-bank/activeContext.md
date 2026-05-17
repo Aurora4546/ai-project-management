@@ -18,6 +18,9 @@
 - **Chat Styling & Layout Refinements:** Applied global `font-inter` to the chat feature. Resolved AI response text cropping issues in modals.
 - **AI Report Stabilization:** Resolved "Unable to access lob stream" errors and implemented snapshot-based data persistence.
 - **AI Report Delete Confirmation:** Integrated `DeleteConfirmModal` into the `Reports.tsx` page.
+- **Issue Card Commenting Refinements:**
+    - Resolved the "edited" badge appearing immediately on newly created issue comments by applying a 1-second threshold comparison to timestamps.
+    - Restored issue tag navigation by correcting the regex in `UpdateIssueModal.tsx` to properly capture the issue database ID and support dynamic modal switching.
 
 ## Next Steps
 - **Production Deployment:** Finalize deployment of the stabilized backend to Render.

@@ -348,17 +348,17 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                 );
             }
             
-            const issueMatch = part.match(/#\[([^\]]+)\]\([^\)]+\)/);
+            const issueMatch = part.match(/#\[([^\]]+)\]\(([^\)]+)\)/);
             if (issueMatch) {
                 const issueId = issueMatch[2];
-                const ref = projectIssues?.find(i => i.id.toString() === issueId);
+                const ref = projectIssues?.find(i => i.id.toString() === issueId || i.issueKey === issueMatch[1]);
                 const theme = getIssueTheme(ref?.type || 'TASK');
                 
                 return (
                     <span 
                         key={index} 
                         className={`inline-flex items-center gap-1 font-black text-[12px] mx-0.5 transition-opacity hover:opacity-80 cursor-pointer ${theme.color} align-bottom`}
-                        onClick={() => onNavigate?.(issueId)}
+                        onClick={() => onNavigate?.(ref?.id.toString() || issueId)}
                         title={ref?.title}
                     >
                         <span className={`material-symbols-outlined text-[14px] ${theme.color} font-bold`}>{theme.icon}</span>
@@ -726,7 +726,12 @@ export const UpdateIssueModal = ({ isOpen, onClose, task: initialTask, projectId
                                         const canDelete = isAuthor || isLead;
                                         const canEdit = isAuthor;
                                         const isEditing = editingCommentId === comment.id;
-                                        const isEdited = comment.updatedAt && comment.updatedAt !== comment.createdAt;
+                                        const isEdited = (() => {
+                                            if (!comment.updatedAt || !comment.createdAt) return false;
+                                            const created = new Date(comment.createdAt).getTime();
+                                            const updated = new Date(comment.updatedAt).getTime();
+                                            return updated > created + 1000;
+                                        })();
 
                                         return (
                                             <div key={comment.id} className={`flex w-full group ${isAuthor ? 'justify-end' : 'justify-start'}`}>
